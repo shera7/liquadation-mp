@@ -4,7 +4,7 @@ import { verifySessionToken } from "@/lib/auth";
 const PROTECTED_API_RULES: { prefix: string; methods: string[] }[] = [
   { prefix: "/api/products", methods: ["POST", "PATCH", "DELETE"] },
   { prefix: "/api/categories", methods: ["POST", "PATCH", "DELETE"] },
-  { prefix: "/api/requests", methods: ["GET", "PATCH"] }, // POST (публичная заявка) остаётся открытым
+  { prefix: "/api/requests", methods: ["GET", "PATCH"] },
   { prefix: "/api/admin", methods: ["GET", "POST", "PATCH", "DELETE"] },
 ];
 
@@ -14,6 +14,8 @@ export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const token = req.cookies.get("admin_session")?.value;
   const session = token ? await verifySessionToken(token) : null;
+
+  console.log("[middleware]", pathname, "token present:", Boolean(token), "session valid:", Boolean(session));
 
   const isAdminPage = pathname.startsWith("/admin");
   const apiRule = PROTECTED_API_RULES.find(
