@@ -6,6 +6,8 @@ import SearchBar from "@/components/SearchBar";
 import SortSelect from "@/components/SortSelect";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 const PAGE_SIZE = 12;
 
 interface CatalogPageProps {
@@ -32,9 +34,16 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         { inventoryNumber: { contains: searchParams.q, mode: "insensitive" } },
       ],
     }),
-    ...(searchParams.category && {
-      category: { slug: searchParams.category },
-    }),
+    ...(searchParams.category
+      ? {
+          category: {
+            OR: [
+              { slug: searchParams.category },
+              { parent: { slug: searchParams.category } },
+            ],
+          },
+        }
+      : {}),
     ...(searchParams.status
       ? { status: searchParams.status as any }
       : { status: { not: "WITHDRAWN" } }),
@@ -67,7 +76,11 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       include: { images: true, category: true },
     }),
     prisma.product.count({ where }),
-    prisma.category.findMany({ where: { parentId: null }, orderBy: { sortOrder: "asc" } }),
+    prisma.category.findMany({
+      where: { parentId: null },
+      orderBy: { sortOrder: "asc" },
+      include: { children: { orderBy: { sortOrder: "asc" } } },
+    }),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -127,4 +140,3 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     </div>
   );
 }
-
