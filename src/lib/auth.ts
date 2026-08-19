@@ -36,7 +36,8 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
   try {
     const { payload } = await jwtVerify(token, getSecret());
     return payload as unknown as SessionPayload;
-  } catch {
+  } catch (e) {
+    console.error("[verifySessionToken] ошибка проверки токена:", e);
     return null;
   }
 }
