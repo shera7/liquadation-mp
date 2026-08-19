@@ -5,7 +5,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
 const archivo = Archivo({
-  subsets: ["latin", "cyrillic"],
+  subsets: ["latin"],
   weight: ["600", "700", "800"],
   variable: "--font-archivo",
 });
