@@ -9,6 +9,7 @@ import Link from "next/link";
 const NAV = [
   { href: "/admin", label: "Обзор" },
   { href: "/admin/products", label: "Товары" },
+  { href: "/admin/categories", label: "Категории" },
   { href: "/admin/requests", label: "Заявки" },
   { href: "/admin/import", label: "Импорт Excel" },
 ];
