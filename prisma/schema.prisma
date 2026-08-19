@@ -160,3 +160,17 @@ model Request {
   @@index([status])
   @@index([productId])
 }
+
+enum AdminRole {
+  FULL       // Полный контроль
+  MODERATOR  // Модерация: товары, категории, заявки
+}
+
+model Admin {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(MODERATOR)
+  createdAt    DateTime  @default(now())
+}
