@@ -5,10 +5,15 @@ import QuickRequestForm from "@/components/QuickRequestForm";
 export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const [categories, newest] = await Promise.all([
-    prisma.category.findMany({
+prisma.category.findMany({
   where: { parentId: null },
   orderBy: { sortOrder: "asc" },
-  include: { _count: { select: { products: true } } },
+  include: {
+    _count: { select: { products: true } },
+    children: {
+      include: { _count: { select: { products: true } } },
+    },
+  },
 }),
     prisma.product.findMany({
       where: { status: "IN_STOCK" },
@@ -57,7 +62,7 @@ export default async function HomePage() {
             <div className="grid grid-cols-2 gap-4">
               {categories.map((c) => (
                 <div key={c.id} className="border-l-2 border-amber pl-3">
-                  <div className="text-2xl font-display font-700">{c._count.products}</div>
+                  <div className="text-2xl font-display font-700">{c._count.products + c.children.reduce((sum, ch) => sum + ch._count.products, 0)}</div>
                   <div className="text-xs text-steelLight">{c.name}</div>
                 </div>
               ))}
@@ -76,7 +81,7 @@ export default async function HomePage() {
               href={`/catalog?category=${c.slug}`}
               className="group bg-white border border-line rounded-sm p-5 hover:border-amber transition-colors"
             >
-              <div className="text-xs font-mono text-steel mb-2">{c._count.products} позиций</div>
+              <div className="text-xs font-mono text-steel mb-2">{c._count.products + c.children.reduce((sum, ch) => sum + ch._count.products, 0)} позиций</div>
               <div className="font-display font-700 text-graphite group-hover:text-amber-dark transition-colors">
                 {c.name}
               </div>
