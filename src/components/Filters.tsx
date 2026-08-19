@@ -2,8 +2,15 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 
+interface CategoryWithChildren {
+  id: string;
+  name: string;
+  slug: string;
+  children?: { id: string; name: string; slug: string }[];
+}
+
 interface FiltersProps {
-  categories: { id: string; name: string; slug: string }[];
+  categories: CategoryWithChildren[];
 }
 
 const STATUS_OPTIONS = [
@@ -43,18 +50,38 @@ export default function Filters({ categories }: FiltersProps) {
           >
             Все категории
           </button>
+
           {categories.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => updateParam("category", c.slug)}
-              className={`block text-sm w-full text-left px-2 py-1 rounded-sm ${
-                searchParams.get("category") === c.slug
-                  ? "bg-amber/15 text-amber-dark font-medium"
-                  : "text-steel hover:text-graphite"
-              }`}
-            >
-              {c.name}
-            </button>
+            <div key={c.id}>
+              <button
+                onClick={() => updateParam("category", c.slug)}
+                className={`block text-sm w-full text-left px-2 py-1 rounded-sm ${
+                  searchParams.get("category") === c.slug
+                    ? "bg-amber/15 text-amber-dark font-medium"
+                    : "text-steel hover:text-graphite"
+                }`}
+              >
+                {c.name}
+              </button>
+
+              {c.children && c.children.length > 0 && (
+                <div className="pl-3 space-y-1">
+                  {c.children.map((child) => (
+                    <button
+                      key={child.id}
+                      onClick={() => updateParam("category", child.slug)}
+                      className={`block text-sm w-full text-left px-2 py-1 rounded-sm ${
+                        searchParams.get("category") === child.slug
+                          ? "bg-amber/15 text-amber-dark font-medium"
+                          : "text-steel/80 hover:text-graphite"
+                      }`}
+                    >
+                      {child.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           ))}
         </div>
       </div>
