@@ -8,7 +8,7 @@ export default async function HomePage() {
     prisma.category.findMany({
       where: { parentId: null },
       orderBy: { sortOrder: "asc" },
-      include: { _count: { select: { products: true } } },
+      include: { children: { orderBy: { sortOrder: "asc" } } },
     }),
     prisma.product.findMany({
       where: { status: "IN_STOCK" },
