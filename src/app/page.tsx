@@ -6,10 +6,10 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const [categories, newest] = await Promise.all([
     prisma.category.findMany({
-      where: { parentId: null },
-      orderBy: { sortOrder: "asc" },
-      include: { children: { orderBy: { sortOrder: "asc" } } },
-    }),
+  where: { parentId: null },
+  orderBy: { sortOrder: "asc" },
+  include: { _count: { select: { products: true } } },
+}),
     prisma.product.findMany({
       where: { status: "IN_STOCK" },
       orderBy: { createdAt: "desc" },
