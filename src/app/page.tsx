@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
 import QuickRequestForm from "@/components/QuickRequestForm";
-
+export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const [categories, newest] = await Promise.all([
     prisma.category.findMany({
