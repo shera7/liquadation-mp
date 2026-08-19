@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #f2f1ed;
+  color: #1c1f22;
+}
+
+/* Сигнатурный элемент: инвентарная бирка на карточке товара —
+   перфорированный край сверху, как у настоящей биркой на оборудовании */
+.tag-perforation {
+  background-image: radial-gradient(circle, #f2f1ed 2px, transparent 2.5px);
+  background-size: 14px 100%;
+  background-position: center;
+  height: 6px;
+}
+
+.font-mono-tabular {
+  font-variant-numeric: tabular-nums;
+}
