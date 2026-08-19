@@ -6,7 +6,7 @@ export default function Header() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <span className="font-display font-800 text-lg tracking-tight">
-            АКТИВ<span className="text-amber">.</span>КАТАЛОГ
+            EQUIP<span className="text-amber">.PRO</span>
           </span>
         </Link>
 
