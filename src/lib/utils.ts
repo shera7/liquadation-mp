@@ -9,11 +9,11 @@ export function formatPrice(
   return currency === "USD" ? `$${formatted}` : `${formatted} сум`;
 }
 
-export const STATUS_LABELS: Record<string, { label: string; className: string }> = {
-  IN_STOCK: { label: "В продаже", className: "bg-okgreen/10 text-okgreen" },
-  RESERVED: { label: "Забронировано", className: "bg-amber/10 text-amber-dark" },
-  SOLD: { label: "Продано", className: "bg-alert/10 text-alert" },
-  WITHDRAWN: { label: "Снято с продажи", className: "bg-steel/10 text-steel" },
+export const STATUS_LABELS: Record<string, { label: string; className: string; dot: string }> = {
+  IN_STOCK: { label: "В продаже", className: "bg-okgreen/10 text-okgreen", dot: "#3E7A4C" },
+  RESERVED: { label: "Забронировано", className: "bg-amber/10 text-amber-dark", dot: "#E8A33D" },
+  SOLD: { label: "Продано", className: "bg-alert/10 text-alert", dot: "#C0392B" },
+  WITHDRAWN: { label: "Снято с продажи", className: "bg-steel/10 text-steel", dot: "#6B6F76" },
 };
 
 export const CONDITION_LABELS: Record<string, string> = {
