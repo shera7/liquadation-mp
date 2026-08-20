@@ -76,13 +76,25 @@ export default function ProductCard({ product }: ProductCardProps) {
         </h3>
 
         <div className="flex items-center justify-between">
-          <span className="font-mono-tabular font-semibold text-lg text-graphite">
-            {formatPrice(product.price, product.currency, product.priceOnRequest)}
-          </span>
+          <div className="flex items-baseline gap-2">
+            {(product as any).oldPrice && (
+              <span className="text-xs text-steel line-through">
+                {formatOldPrice((product as any).oldPrice, product.currency)}
+              </span>
+            )}
+            <span className="font-mono-tabular font-semibold text-lg text-graphite">
+              {formatPrice(product.price, product.currency, product.priceOnRequest)}
+            </span>
+          </div>
           <span className="text-xs text-steel">
             {CONDITION_LABELS[product.condition]}
           </span>
         </div>
+        {(product as any).priceLabel && (
+          <div className="mt-1.5 inline-block text-[10px] font-bold uppercase tracking-wide text-amber-dark bg-amber/10 px-2 py-0.5 rounded-sm">
+            {(product as any).priceLabel}
+          </div>
+        )}
 
         {product.location && (
           <div className="mt-2 text-xs text-steel">{product.location}</div>
