@@ -32,3 +32,13 @@ export const REQUEST_STATUS_LABELS: Record<string, string> = {
   REJECTED: "Отказ",
   UNREACHABLE: "Не удалось связаться",
 };
+
+export function formatOldPrice(
+  oldPrice: number | string | null | undefined,
+  currency: "USD" | "UZS" = "USD"
+): string | null {
+  if (oldPrice === null || oldPrice === undefined) return null;
+  const value = typeof oldPrice === "string" ? parseFloat(oldPrice) : oldPrice;
+  const formatted = new Intl.NumberFormat("ru-RU").format(value);
+  return currency === "USD" ? `$${formatted}` : `${formatted} сум`;
+}
