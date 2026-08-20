@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { formatPrice, STATUS_LABELS, CONDITION_LABELS } from "@/lib/utils";
+import StatusBadge from "./StatusBadge";
 
 interface ProductCardProps {
   product: {
@@ -45,11 +46,9 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
         )}
 
-        <span
-          className={`absolute top-2 left-2 text-[11px] font-semibold px-2 py-1 rounded-sm ${statusInfo.className}`}
-        >
-          {statusInfo.label}
-        </span>
+        <div className="absolute top-2 left-2">
+          <StatusBadge status={product.status} />
+        </div>
 
         {photoCount > 1 && (
           <span className="absolute bottom-2 right-2 text-[11px] font-medium bg-graphite/80 text-white px-2 py-0.5 rounded-sm flex items-center gap-1">
