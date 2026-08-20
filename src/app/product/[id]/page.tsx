@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import { formatPrice, STATUS_LABELS, CONDITION_LABELS } from "@/lib/utils";
 import RequestForm from "@/components/RequestForm";
 import ProductGallery from "@/components/ProductGallery";
+import StatusBadge from "@/components/StatusBadge";
 
 export const dynamic = "force-dynamic";
 
@@ -146,9 +147,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             <div className="tag-perforation -mx-6 -mt-6 mb-4" />
             <div className="flex items-center justify-between mb-2">
               <span className="font-mono text-xs text-steel">№{product.inventoryNumber}</span>
-              <span className={`text-[11px] font-semibold px-2 py-1 rounded-sm ${statusInfo.className}`}>
-                {statusInfo.label}
-              </span>
+               <StatusBadge status={product.status} />
             </div>
 
             <h1 className="font-display font-800 text-2xl text-graphite mb-3 leading-tight">
