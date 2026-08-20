@@ -154,9 +154,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {product.title}
             </h1>
 
-            <div className="font-mono-tabular font-800 text-3xl text-graphite mb-4">
+            {product.oldPrice && (
+              <div className="text-sm text-steel line-through mb-0.5">
+                {formatOldPrice(product.oldPrice as any, product.currency)}
+              </div>
+            )}
+            <div className="font-mono-tabular font-800 text-3xl text-graphite mb-1">
               {formatPrice(product.price as any, product.currency, product.priceOnRequest)}
             </div>
+            {product.priceLabel && (
+              <div className="inline-block text-[11px] font-bold uppercase tracking-wide text-amber-dark bg-amber/10 px-2 py-1 rounded-sm mb-4">
+                {product.priceLabel}
+              </div>
+            )}
 
             <dl className="text-sm space-y-1.5 mb-6 text-steel">
               <div className="flex justify-between">
