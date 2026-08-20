@@ -3,8 +3,54 @@ import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
 import QuickRequestForm from "@/components/QuickRequestForm";
 export const dynamic = "force-dynamic";
+
+const STEPS = [
+  {
+    title: "Выбор позиции",
+    desc: "Находите товар в каталоге или оставляете общую заявку",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8842A" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="11" cy="11" r="7" />
+        <path d="m21 21-4.3-4.3" />
+      </svg>
+    ),
+  },
+  {
+    title: "Заявка",
+    desc: "Заполняете форму — заявка сразу попадает к менеджеру",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8842A" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+        <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+        <path d="M16 13H8" />
+        <path d="M16 17H8" />
+        <path d="M10 9H8" />
+      </svg>
+    ),
+  },
+  {
+    title: "Переговоры",
+    desc: "Менеджер связывается с вами, уточняет детали и условия",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8842A" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+      </svg>
+    ),
+  },
+  {
+    title: "Сделка",
+    desc: "Согласовываете цену, оформляете и забираете имущество",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C8842A" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+        <path d="m9 11 3 3L22 4" />
+      </svg>
+    ),
+  },
+];
+
 export default async function HomePage() {
-  const [categories, newest] = await Promise.all([
+const [categories, newest] = await Promise.all([
 prisma.category.findMany({
   where: { parentId: null },
   orderBy: { sortOrder: "asc" },
