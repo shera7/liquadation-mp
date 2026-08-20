@@ -128,7 +128,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.documents.map((doc) => (
                   <li key={doc.id}>
                     
-                      href={doc.url}
+                      <a href={doc.url}
                       target="_blank"
                       className="text-amber-dark text-sm hover:underline"
                     >
