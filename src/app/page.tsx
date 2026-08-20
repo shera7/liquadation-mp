@@ -154,21 +154,27 @@ prisma.category.findMany({
         </section>
       )}
 
-      {/* Как проходит покупка */}
+           {/* Как проходит покупка */}
       <section id="how-it-works" className="bg-white border-y border-line">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-          <h2 className="font-display font-700 text-2xl text-graphite mb-8">Как проходит покупка</h2>
-          <div className="grid sm:grid-cols-4 gap-6">
-            {[
-              ["01", "Выбор позиции", "Находите товар в каталоге или оставляете общую заявку"],
-              ["02", "Заявка", "Заполняете форму — заявка сразу попадает к менеджеру"],
-              ["03", "Переговоры", "Менеджер связывается с вами, уточняет детали и условия"],
-              ["04", "Сделка", "Согласовываете цену, оформляете и забираете имущество"],
-            ].map(([n, title, desc]) => (
-              <div key={n}>
-                <div className="font-mono text-amber-dark text-sm mb-2">{n}</div>
-                <div className="font-display font-700 text-graphite mb-1">{title}</div>
-                <div className="text-sm text-steel">{desc}</div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
+          <span className="font-mono text-xs tracking-widest text-amber-dark">ПРОЦЕСС</span>
+          <h2 className="font-display font-800 text-3xl text-graphite mt-2 mb-12">
+            Как проходит покупка
+          </h2>
+
+          <div className="relative grid sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-10">
+            <div className="hidden lg:block absolute top-7 left-0 right-0 h-px bg-line" />
+
+            {STEPS.map((step, i) => (
+              <div key={step.title} className="relative">
+                <div className="relative z-10 w-14 h-14 rounded-full bg-white border-2 border-amber flex items-center justify-center mb-5">
+                  {step.icon}
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-graphite text-white text-[10px] font-mono flex items-center justify-center">
+                    {i + 1}
+                  </span>
+                </div>
+                <div className="font-display font-700 text-graphite text-lg mb-1.5">{step.title}</div>
+                <div className="text-sm text-steel leading-relaxed">{step.desc}</div>
               </div>
             ))}
           </div>
