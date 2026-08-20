@@ -1,22 +1,25 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import Image from "next/image";
+import Link from "next/link";
 import type { Metadata } from "next";
-import {
-  formatPrice,
-  STATUS_LABELS,
-  CONDITION_LABELS,
-} from "@/lib/utils";
+import { formatPrice, STATUS_LABELS, CONDITION_LABELS } from "@/lib/utils";
 import RequestForm from "@/components/RequestForm";
+import ProductGallery from "@/components/ProductGallery";
+
+export const dynamic = "force-dynamic";
 
 interface ProductPageProps {
-  params: { id: string }; // slug
+  params: { id: string };
 }
 
 async function getProduct(slug: string) {
   return prisma.product.findUnique({
     where: { slug },
-    include: { images: true, documents: true, category: true },
+    include: {
+      images: true,
+      documents: true,
+      category: { include: { parent: true } },
+    },
   });
 }
 
@@ -47,35 +50,33 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const statusInfo = STATUS_LABELS[product.status];
   const specs = (product.specs as Record<string, string> | null) ?? {};
+  const parentCategory = product.category.parent;
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
-      <nav className="text-xs text-steel mb-6">
-        Каталог / {product.category.name} / {product.title}
+      <nav className="text-xs text-steel mb-6 flex items-center gap-1.5 flex-wrap">
+        <Link href="/catalog" className="hover:text-amber-dark">
+          Каталог
+        </Link>
+        {parentCategory && (
+          <>
+            <span>/</span>
+            <Link href={`/catalog?category=${parentCategory.slug}`} className="hover:text-amber-dark">
+              {parentCategory.name}
+            </Link>
+          </>
+        )}
+        <span>/</span>
+        <Link href={`/catalog?category=${product.category.slug}`} className="hover:text-amber-dark">
+          {product.category.name}
+        </Link>
+        <span>/</span>
+        <span className="text-graphite">{product.title}</span>
       </nav>
 
       <div className="grid lg:grid-cols-[1.3fr_1fr] gap-10">
-        {/* Галерея */}
         <div>
-          <div className="relative aspect-[4/3] bg-white border border-line rounded-sm overflow-hidden mb-3">
-            {product.images[0] ? (
-              <Image src={product.images[0].url} alt={product.title} fill className="object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-steel">Нет фото</div>
-            )}
-          </div>
-          {product.images.length > 1 && (
-            <div className="grid grid-cols-5 gap-2">
-              {product.images.slice(1).map((img) => (
-                <div
-                  key={img.id}
-                  className="relative aspect-square bg-white border border-line rounded-sm overflow-hidden"
-                >
-                  <Image src={img.url} alt={product.title} fill className="object-cover" />
-                </div>
-              ))}
-            </div>
-          )}
+          <ProductGallery images={product.images} title={product.title} />
 
           {product.description && (
             <div className="mt-8">
@@ -126,7 +127,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <ul className="space-y-2">
                 {product.documents.map((doc) => (
                   <li key={doc.id}>
-                    <a
+                    
                       href={doc.url}
                       target="_blank"
                       className="text-amber-dark text-sm hover:underline"
@@ -140,7 +141,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
           )}
         </div>
 
-        {/* Боковая панель: цена + заявка */}
         <div>
           <div className="border border-line rounded-sm bg-white p-6 sticky top-24">
             <div className="tag-perforation -mx-6 -mt-6 mb-4" />
