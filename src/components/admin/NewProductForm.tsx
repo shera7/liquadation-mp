@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import ImageUploader, { UploadedImage } from "./ImageUploader";
 
 interface NewProductFormProps {
   categories: { id: string; name: string }[];
@@ -10,6 +11,7 @@ interface NewProductFormProps {
 export default function NewProductForm({ categories }: NewProductFormProps) {
   const router = useRouter();
   const [priceOnRequest, setPriceOnRequest] = useState(false);
+  const [images, setImages] = useState<UploadedImage[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -35,6 +37,7 @@ export default function NewProductForm({ categories }: NewProductFormProps) {
       model: form.get("model") || undefined,
       year: form.get("year") ? Number(form.get("year")) : undefined,
       power: form.get("power") || undefined,
+      images,
     };
 
     const res = await fetch("/api/products", {
@@ -135,6 +138,8 @@ export default function NewProductForm({ categories }: NewProductFormProps) {
           <input name="power" className="input" />
         </Field>
       </div>
+
+      <ImageUploader images={images} onChange={setImages} />
 
       {error && <div className="text-alert text-sm">{error}</div>}
 
