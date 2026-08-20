@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { formatPrice, STATUS_LABELS, CONDITION_LABELS } from "@/lib/utils";
+import { formatPrice, formatOldPrice, STATUS_LABELS, CONDITION_LABELS } from "@/lib/utils";
 import StatusBadge from "./StatusBadge";
 
 interface ProductCardProps {
