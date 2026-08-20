@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { formatPrice, STATUS_LABELS, CONDITION_LABELS } from "@/lib/utils";
+import { formatPrice, formatOldPrice, STATUS_LABELS, CONDITION_LABELS } from "@/lib/utils";
 import RequestForm from "@/components/RequestForm";
 import ProductGallery from "@/components/ProductGallery";
 import StatusBadge from "@/components/StatusBadge";
