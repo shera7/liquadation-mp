@@ -21,7 +21,6 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const statusInfo = STATUS_LABELS[product.status] ?? STATUS_LABELS.IN_STOCK;
   const image = product.images[0]?.url;
   const photoCount = product.images.length;
 
