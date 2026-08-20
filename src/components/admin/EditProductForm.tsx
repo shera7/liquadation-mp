@@ -21,6 +21,8 @@ export default function EditProductForm({ product, categories }: { product: any;
       categoryId: form.get("categoryId"),
       description: form.get("description") || undefined,
       price: priceOnRequest ? null : Number(form.get("price")) || undefined,
+      oldPrice: form.get("oldPrice") ? Number(form.get("oldPrice")) : null,
+      priceLabel: form.get("priceLabel") || null,
       priceOnRequest,
       currency: form.get("currency"),
       quantity: Number(form.get("quantity")) || 1,
@@ -95,6 +97,27 @@ export default function EditProductForm({ product, categories }: { product: any;
             />
             Цена по запросу
           </label>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 border-t border-line pt-4">
+          <Field label="Старая цена (зачёркнутая, необязательно)">
+            <input
+              name="oldPrice"
+              type="number"
+              step="0.01"
+              defaultValue={product.oldPrice ?? ""}
+              placeholder="Например: 15000"
+              className="input"
+            />
+          </Field>
+          <Field label="Метка у цены (необязательно)">
+            <input
+              name="priceLabel"
+              defaultValue={product.priceLabel ?? ""}
+              placeholder="Например: Лучшая цена"
+              className="input"
+            />
+          </Field>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
