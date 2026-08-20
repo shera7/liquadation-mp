@@ -61,6 +61,8 @@ model Product {
   unit             String            @default("шт")     // единица измерения
 
   price            Decimal?          @db.Decimal(14, 2) // null = "цена по запросу"
+  oldPrice         Decimal?          @db.Decimal(14, 2) // старая цена — показывается зачёркнутой
+  priceLabel       String?           // текстовая метка у цены, напр. "Лучшая цена"
   currency         Currency          @default(USD)
   priceOnRequest   Boolean           @default(false)
 
