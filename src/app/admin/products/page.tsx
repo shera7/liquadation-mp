@@ -60,6 +60,7 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
+                    <Link  href={`/admin/products/${p.id}/edit`}  className="text-xs text-amber-dark hover:underline mr-3">  Редактировать</Link>
                     <ProductRowActions productId={p.id} currentStatus={p.status} />
                   </td>
                 </tr>
