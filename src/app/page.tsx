@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import ProductCard from "@/components/ProductCard";
 import QuickRequestForm from "@/components/QuickRequestForm";
+import HeroSearchBar from "@/components/HeroSearchBar";
 export const dynamic = "force-dynamic";
 
 const STEPS = [
@@ -87,6 +88,9 @@ prisma.category.findMany({
               Оборудование, материалы, запчасти и другие активы в наличии.
               Оставьте заявку — мы свяжемся с вами.
             </p>
+            <div className="mb-6">
+              <HeroSearchBar />
+            </div>
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/catalog"
