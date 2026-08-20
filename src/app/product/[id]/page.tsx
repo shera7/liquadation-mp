@@ -177,13 +177,23 @@ export default async function ProductPage({ params }: ProductPageProps) {
               )}
             </dl>
 
-            <div className="space-y-2">
-              <RequestForm productId={product.id} productTitle={product.title} mode="request" />
-              {product.priceOnRequest && (
-                <RequestForm productId={product.id} productTitle={product.title} mode="price" />
-              )}
-              <RequestForm productId={product.id} productTitle={product.title} mode="question" />
-            </div>
+          {product.status === "SOLD" || product.status === "WITHDRAWN" ? (
+              <div className="border border-line rounded-sm bg-concrete p-4 text-center text-sm text-steel">
+                Этот товар уже продан. Посмотрите похожие позиции в{" "}
+                <Link href={`/catalog?category=${product.category.slug}`} className="text-amber-dark hover:underline">
+                  этой категории
+                </Link>
+                .
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <RequestForm productId={product.id} productTitle={product.title} mode="request" />
+                {product.priceOnRequest && (
+                  <RequestForm productId={product.id} productTitle={product.title} mode="price" />
+                )}
+                <RequestForm productId={product.id} productTitle={product.title} mode="question" />
+              </div>
+            )}
           </div>
         </div>
       </div>
