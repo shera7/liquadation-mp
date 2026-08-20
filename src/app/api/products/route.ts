@@ -20,9 +20,11 @@ const createProductSchema = z.object({
   model: z.string().optional(),
   year: z.number().int().optional(),
   power: z.string().optional(),
+  images: z
+    .array(z.object({ url: z.string(), isPrimary: z.boolean().optional() }))
+    .optional(),
 });
 
-// GET /api/products — используется публичным каталогом при необходимости client-side загрузки
 export async function GET(req: NextRequest) {
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
@@ -32,7 +34,6 @@ export async function GET(req: NextRequest) {
   return NextResponse.json(products);
 }
 
-// POST /api/products — создание товара из админки
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const parsed = createProductSchema.safeParse(body);
@@ -41,11 +42,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const slug = `${slugify(parsed.data.title, { lower: true, strict: true })}-${parsed.data.inventoryNumber}`;
+  const { images, ...productData } = parsed.data;
+  const slug = `${slugify(productData.title, { lower: true, strict: true })}-${productData.inventoryNumber}`;
 
   try {
     const product = await prisma.product.create({
-      data: { ...parsed.data, slug },
+      data: {
+        ...productData,
+        slug,
+        images: images
+          ? {
+              create: images.map((img, i) => ({
+                url: img.url,
+                isPrimary: img.isPrimary ?? i === 0,
+                sortOrder: i,
+              })),
+            }
+          : undefined,
+      },
+      include: { images: true },
     });
     return NextResponse.json(product, { status: 201 });
   } catch (e: any) {
