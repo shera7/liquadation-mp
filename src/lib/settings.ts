@@ -14,6 +14,7 @@ export async function getSiteSettings() {
       contactWhatsapp: null,
       telegramBotToken: null,
       telegramManagerChatId: null,
+      telegramBotUsername: null,
     }
   );
 }
@@ -26,6 +27,7 @@ export async function upsertSiteSettings(data: {
   contactWhatsapp?: string | null;
   telegramBotToken?: string | null;
   telegramManagerChatId?: string | null;
+  telegramBotUsername?: string | null;
 }) {
   return prisma.siteSettings.upsert({
     where: { id: SETTINGS_ID },
