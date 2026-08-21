@@ -139,6 +139,7 @@ model Request {
   name          String
   company       String?
   phone         String
+  ip            String?
   telegram      String?
   whatsapp      String?
   email         String?
