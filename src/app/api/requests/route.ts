@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { notifyManagerNewRequest } from "@/lib/telegram";
 import { formatPrice } from "@/lib/utils";
+import { compareVersions } from "@/lib/nda";
 import { z } from "zod";
 
 const requestSchema = z.object({
@@ -21,6 +22,8 @@ const requestSchema = z.object({
   comment: z.string().optional(),
   website: z.string().optional(),
   formLoadedAt: z.number().optional(),
+  ndaAcceptanceId: z.string().optional(),
+  ndaTelegramId: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -36,9 +39,40 @@ export async function POST(req: NextRequest) {
   if (data.website) {
     return NextResponse.json({ ok: true, id: "ignored" }, { status: 201 });
   }
-
   if (data.formLoadedAt && Date.now() - data.formLoadedAt < 3000) {
     return NextResponse.json({ ok: true, id: "ignored" }, { status: 201 });
+  }
+
+  // Проверка NDA — только для заявок по конкретному товару
+  if (data.type === "PRODUCT") {
+    const activeNda = await prisma.ndaDocument.findFirst({ where: { status: "ACTIVE" } });
+
+    if (activeNda) {
+      if (!data.ndaAcceptanceId || !data.ndaTelegramId) {
+        return NextResponse.json(
+          { error: "Требуется подтверждение NDA", code: "NDA_REQUIRED" },
+          { status: 403 }
+        );
+      }
+
+      const acceptance = await prisma.ndaAcceptance.findUnique({
+        where: { id: data.ndaAcceptanceId },
+      });
+
+      if (!acceptance || acceptance.telegramId !== data.ndaTelegramId) {
+        return NextResponse.json(
+          { error: "Недействительное подтверждение NDA", code: "NDA_REQUIRED" },
+          { status: 403 }
+        );
+      }
+
+      if (compareVersions(acceptance.ndaVersion, activeNda.version) < 0) {
+        return NextResponse.json(
+          { error: "Требуется подтвердить актуальную версию NDA", code: "NDA_UPDATE_REQUIRED" },
+          { status: 403 }
+        );
+      }
+    }
   }
 
   const ip =
@@ -47,10 +81,7 @@ export async function POST(req: NextRequest) {
     "unknown";
 
   const recentCount = await prisma.request.count({
-    where: {
-      ip,
-      createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) },
-    },
+    where: { ip, createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) } },
   });
 
   if (recentCount >= 3) {
@@ -77,6 +108,7 @@ export async function POST(req: NextRequest) {
       budget: data.budget,
       comment: data.comment,
       ip,
+      ndaAcceptanceId: data.ndaAcceptanceId,
     },
   });
 
