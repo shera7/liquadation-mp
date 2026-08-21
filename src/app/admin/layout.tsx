@@ -11,7 +11,10 @@ const NAV = [
   { href: "/admin/import", label: "Импорт Excel" },
 ];
 
-const FULL_ONLY_NAV = [{ href: "/admin/employees", label: "Сотрудники" }];
+const FULL_ONLY_NAV = [
+  { href: "/admin/settings", label: "Настройки" },
+  { href: "/admin/employees", label: "Сотрудники" },
+];
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const token = cookies().get("admin_session")?.value;
