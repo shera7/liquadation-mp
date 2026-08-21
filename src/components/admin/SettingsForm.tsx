@@ -37,6 +37,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       contactWhatsapp: form.get("contactWhatsapp") || null,
       telegramBotToken: form.get("telegramBotToken") || null,
       telegramManagerChatId: form.get("telegramManagerChatId") || null,
+      telegramBotUsername: form.get("telegramBotUsername") || null,
     };
 
     const res = await fetch("/api/admin/settings", {
