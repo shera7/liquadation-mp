@@ -2,14 +2,34 @@ import { getSiteSettings } from "./settings";
 
 interface RequestNotificationPayload {
   requestId: string;
+  type: "PRODUCT" | "GENERAL";
   productTitle?: string;
   price?: string;
   clientName: string;
   company?: string | null;
   phone: string;
+  telegram?: string | null;
+  whatsapp?: string | null;
+  email?: string | null;
   quantity?: number | null;
+  desiredPrice?: string | null;
+  contactMethod?: string | null;
+  interestedCategory?: string | null;
+  budget?: string | null;
   comment?: string | null;
   productUrl?: string;
+  adminUrl?: string;
+}
+
+const CONTACT_METHOD_LABELS: Record<string, string> = {
+  phone: "Звонок",
+  telegram: "Telegram",
+  whatsapp: "WhatsApp",
+  email: "Email",
+};
+
+function escapeHtml(text: string) {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 export async function notifyManagerNewRequest(payload: RequestNotificationPayload) {
@@ -24,20 +44,41 @@ export async function notifyManagerNewRequest(payload: RequestNotificationPayloa
     return;
   }
 
-  const lines = [
-    `<b>Новая заявка #${payload.requestId.slice(-6)}</b>`,
-    "",
-    payload.productTitle ? `Товар: ${payload.productTitle}` : "Тип: Общая заявка",
-    payload.price ? `Цена: ${payload.price}` : undefined,
-    `Клиент: ${payload.clientName}`,
-    payload.company ? `Компания: ${payload.company}` : undefined,
-    `Телефон: ${payload.phone}`,
-    payload.quantity ? `Количество: ${payload.quantity}` : undefined,
-    payload.comment ? `Комментарий: ${payload.comment}` : undefined,
-  ].filter(Boolean);
+  const lines: string[] = [`<b>Новая заявка #${payload.requestId.slice(-6)}</b>`, ""];
 
-  if (payload.productUrl) {
-    lines.push("", `<a href="${payload.productUrl}">Открыть заявку</a>`);
+  if (payload.type === "PRODUCT") {
+    lines.push(`<b>Товар:</b> ${escapeHtml(payload.productTitle ?? "—")}`);
+    if (payload.price) lines.push(`<b>Цена:</b> ${escapeHtml(payload.price)}`);
+  } else {
+    lines.push(`<b>Тип:</b> Общая заявка`);
+    if (payload.interestedCategory)
+      lines.push(`<b>Категория интереса:</b> ${escapeHtml(payload.interestedCategory)}`);
+    if (payload.budget) lines.push(`<b>Бюджет:</b> ${escapeHtml(payload.budget)}`);
+  }
+
+  lines.push("");
+  lines.push(`<b>Клиент:</b> ${escapeHtml(payload.clientName)}`);
+  if (payload.company) lines.push(`<b>Компания:</b> ${escapeHtml(payload.company)}`);
+  lines.push(`<b>Телефон:</b> ${escapeHtml(payload.phone)}`);
+  if (payload.telegram) lines.push(`<b>Telegram/WhatsApp:</b> ${escapeHtml(payload.telegram)}`);
+  if (payload.whatsapp) lines.push(`<b>WhatsApp:</b> ${escapeHtml(payload.whatsapp)}`);
+  if (payload.email) lines.push(`<b>Email:</b> ${escapeHtml(payload.email)}`);
+  if (payload.quantity) lines.push(`<b>Количество:</b> ${payload.quantity}`);
+  if (payload.desiredPrice) lines.push(`<b>Желаемая цена:</b> ${escapeHtml(payload.desiredPrice)}`);
+  if (payload.contactMethod) {
+    lines.push(
+      `<b>Способ связи:</b> ${CONTACT_METHOD_LABELS[payload.contactMethod] ?? payload.contactMethod}`
+    );
+  }
+  if (payload.comment) lines.push(`<b>Комментарий:</b> ${escapeHtml(payload.comment)}`);
+
+  const linkLines: string[] = [];
+  if (payload.productUrl) linkLines.push(`<a href="${payload.productUrl}">Открыть товар</a>`);
+  if (payload.adminUrl) linkLines.push(`<a href="${payload.adminUrl}">Открыть в CRM</a>`);
+
+  if (linkLines.length > 0) {
+    lines.push("");
+    lines.push(linkLines.join("  ·  "));
   }
 
   const text = lines.join("\n");
