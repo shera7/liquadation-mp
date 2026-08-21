@@ -19,9 +19,8 @@ const requestSchema = z.object({
   interestedCategory: z.string().optional(),
   budget: z.string().optional(),
   comment: z.string().optional(),
-  // Поля защиты от спама — не относятся к бизнес-данным заявки
-  website: z.string().optional(), // honeypot: должно быть всегда пустым
-  formLoadedAt: z.number().optional(), // время открытия формы (ms)
+  website: z.string().optional(),
+  formLoadedAt: z.number().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -34,13 +33,10 @@ export async function POST(req: NextRequest) {
 
   const data = parsed.data;
 
-  // Honeypot: если это поле заполнено — значит, форму отправил бот.
-  // Отвечаем "успехом", чтобы не подсказывать боту, что его поймали.
   if (data.website) {
     return NextResponse.json({ ok: true, id: "ignored" }, { status: 201 });
   }
 
-  // Слишком быстрая отправка (меньше 3 секунд с открытия формы) — тоже похоже на бота
   if (data.formLoadedAt && Date.now() - data.formLoadedAt < 3000) {
     return NextResponse.json({ ok: true, id: "ignored" }, { status: 201 });
   }
@@ -50,7 +46,6 @@ export async function POST(req: NextRequest) {
     req.headers.get("x-real-ip") ||
     "unknown";
 
-  // Rate-limit: не более 3 заявок с одного IP за 5 минут
   const recentCount = await prisma.request.count({
     where: {
       ip,
@@ -95,20 +90,31 @@ export async function POST(req: NextRequest) {
       if (product) {
         productTitle = product.title;
         price = formatPrice(product.price as any, product.currency, product.priceOnRequest);
-        productUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? ""}/product/${product.slug}`;
+        productUrl = `${req.nextUrl.origin}/product/${product.slug}`;
       }
     }
 
+    const adminUrl = `${req.nextUrl.origin}/admin/requests`;
+
     await notifyManagerNewRequest({
       requestId: created.id,
+      type: created.type,
       productTitle,
       price,
       clientName: created.name,
       company: created.company,
       phone: created.phone,
+      telegram: created.telegram,
+      whatsapp: created.whatsapp,
+      email: created.email,
       quantity: created.quantity,
+      desiredPrice: created.desiredPrice,
+      contactMethod: created.contactMethod,
+      interestedCategory: created.interestedCategory,
+      budget: created.budget,
       comment: created.comment,
       productUrl,
+      adminUrl,
     });
   } catch (e) {
     console.error("[requests] Ошибка уведомления Telegram:", e);
