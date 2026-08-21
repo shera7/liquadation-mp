@@ -8,7 +8,12 @@ const PROTECTED_API_RULES: { prefix: string; methods: string[] }[] = [
   { prefix: "/api/admin", methods: ["GET", "POST", "PATCH", "DELETE"] },
 ];
 
-const FULL_ONLY_PREFIXES = ["/admin/employees", "/api/admin/employees"];
+const FULL_ONLY_PREFIXES = [
+  "/admin/employees",
+  "/api/admin/employees",
+  "/admin/settings",
+  "/api/admin/settings",
+];
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
