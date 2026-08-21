@@ -177,3 +177,15 @@ model Admin {
   role         AdminRole @default(MODERATOR)
   createdAt    DateTime  @default(now())
 }
+
+model SiteSettings {
+  id                    String   @id @default("singleton")
+  siteName              String   @default("Актив.Каталог")
+  contactPhone          String?
+  contactEmail          String?
+  contactTelegram       String?
+  contactWhatsapp       String?
+  telegramBotToken      String?
+  telegramManagerChatId String?
+  updatedAt             DateTime @updatedAt
+}
