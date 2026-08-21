@@ -121,7 +121,7 @@ export default function NdaGate({ onSigned, onCancel }: NdaGateProps) {
               type="button"
               disabled={!accepted}
               className="flex-1 bg-amber text-graphite font-semibold py-2.5 rounded-sm hover:bg-amber-dark transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-              onClick={() => setAccepted(true)}
+                            onClick={() => {}}
             >
               Продолжить
             </button>
