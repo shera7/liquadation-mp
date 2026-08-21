@@ -12,6 +12,7 @@ interface SettingsFormProps {
     contactWhatsapp: string | null;
     telegramBotToken: string | null;
     telegramManagerChatId: string | null;
+    telegramBotUsername: string | null;
   };
 }
 
@@ -93,6 +94,14 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
             name="telegramManagerChatId"
             defaultValue={settings.telegramManagerChatId ?? ""}
             placeholder="123456789"
+            className="input"
+          />
+        </Field>
+        <Field label="Username бота (без @, нужен для входа через Telegram на сайте)">
+          <input
+            name="telegramBotUsername"
+            defaultValue={settings.telegramBotUsername ?? ""}
+            placeholder="my_asset_bot"
             className="input"
           />
         </Field>
