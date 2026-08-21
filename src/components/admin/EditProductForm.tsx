@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import ProductImageManager from "./ProductImageManager";
+import ProductDocumentManager from "./ProductDocumentManager";
 
 export default function EditProductForm({ product, categories }: { product: any; categories: { id: string; name: string }[] }) {
   const router = useRouter();
@@ -58,7 +59,9 @@ export default function EditProductForm({ product, categories }: { product: any;
       <div className="bg-white border border-line rounded-sm p-6">
         <ProductImageManager productId={product.id} initialImages={product.images} />
       </div>
-
+      <div className="bg-white border border-line rounded-sm p-6">
+        <ProductDocumentManager productId={product.id} initialDocuments={product.documents} />
+      </div>
       <form onSubmit={handleSubmit} className="bg-white border border-line rounded-sm p-6 space-y-4">
         <Field label="Название *">
           <input name="title" required defaultValue={product.title} className="input" />
