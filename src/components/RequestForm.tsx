@@ -17,6 +17,7 @@ const MODE_LABELS: Record<string, string> = {
 export default function RequestForm({ productId, productTitle, mode = "request" }: RequestFormProps) {
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [formLoadedAt] = useState(() => Date.now());
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -39,9 +40,15 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
           desiredPrice: form.get("desiredPrice"),
           contactMethod: form.get("contactMethod"),
           comment: form.get("comment"),
+          website: form.get("website"),
+          formLoadedAt,
         }),
       });
-      if (!res.ok) throw new Error("request failed");
+      const data = await res.json();
+      if (!res.ok) {
+        setStatus("error");
+        return;
+      }
       setStatus("success");
     } catch {
       setStatus("error");
@@ -79,6 +86,17 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
       <div className="text-sm font-semibold text-graphite">
         {MODE_LABELS[mode]}: {productTitle}
       </div>
+
+      {/* Honeypot — невидимо для людей, боты часто заполняют все поля подряд */}
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        className="absolute -left-[9999px] w-px h-px opacity-0"
+        aria-hidden="true"
+      />
+
       <input name="name" required placeholder="Имя *" className="input" />
       <input name="company" placeholder="Компания" className="input" />
       <div className="grid grid-cols-2 gap-2">
