@@ -189,3 +189,43 @@ model SiteSettings {
   telegramManagerChatId String?
   updatedAt             DateTime @updatedAt
 }
+
+enum NdaDocumentStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+model NdaDocument {
+  id            String            @id @default(cuid())
+  version       String
+  title         String
+  content       String            @db.Text
+  contentHash   String
+  status        NdaDocumentStatus @default(DRAFT)
+  effectiveFrom DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  acceptances   NdaAcceptance[]
+}
+
+model NdaAcceptance {
+  id                 String      @id @default(cuid())
+  telegramId         String
+  telegramUsername   String?
+  telegramFirstName  String?
+  ndaDocumentId      String
+  ndaDocument        NdaDocument @relation(fields: [ndaDocumentId], references: [id])
+  ndaVersion         String
+  documentHash       String
+  verificationMethod String      @default("TELEGRAM_WIDGET")
+  signedAt           DateTime    @default(now())
+  ipAddress          String?
+  userAgent          String?
+  createdAt          DateTime    @default(now())
+
+  requests           Request[]
+
+  @@index([telegramId])
+}
