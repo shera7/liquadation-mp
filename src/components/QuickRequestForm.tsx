@@ -4,6 +4,7 @@ import { useState } from "react";
 
 export default function QuickRequestForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [formLoadedAt] = useState(() => Date.now());
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -23,6 +24,8 @@ export default function QuickRequestForm() {
           interestedCategory: form.get("interestedCategory"),
           budget: form.get("budget"),
           comment: form.get("comment"),
+          website: form.get("website"),
+          formLoadedAt,
         }),
       });
       if (!res.ok) throw new Error("failed");
@@ -47,6 +50,16 @@ export default function QuickRequestForm() {
       onSubmit={handleSubmit}
       className="bg-white border border-line rounded-sm p-6 space-y-3 scroll-mt-24"
     >
+      {/* Honeypot */}
+      <input
+        type="text"
+        name="website"
+        tabIndex={-1}
+        autoComplete="off"
+        className="absolute -left-[9999px] w-px h-px opacity-0"
+        aria-hidden="true"
+      />
+
       <div className="grid sm:grid-cols-2 gap-3">
         <input name="name" required placeholder="Имя *" className="input" />
         <input name="company" placeholder="Компания" className="input" />
