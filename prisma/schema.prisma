@@ -140,6 +140,8 @@ model Request {
   company       String?
   phone         String
   ip            String?
+  ndaAcceptanceId String?
+  ndaAcceptance   NdaAcceptance? @relation(fields: [ndaAcceptanceId], references: [id])
   telegram      String?
   whatsapp      String?
   email         String?
@@ -187,6 +189,7 @@ model SiteSettings {
   contactWhatsapp       String?
   telegramBotToken      String?
   telegramManagerChatId String?
+  telegramBotUsername   String?
   updatedAt             DateTime @updatedAt
 }
 
