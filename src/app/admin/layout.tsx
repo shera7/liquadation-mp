@@ -13,6 +13,7 @@ const NAV = [
 
 const FULL_ONLY_NAV = [
   { href: "/admin/settings", label: "Настройки" },
+  { href: "/admin/nda", label: "NDA" },
   { href: "/admin/employees", label: "Сотрудники" },
 ];
 
