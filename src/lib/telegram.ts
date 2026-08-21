@@ -1,13 +1,4 @@
-// Отправка уведомлений менеджеру в Telegram при поступлении новой заявки.
-//
-// Как получить TELEGRAM_BOT_TOKEN:
-// 1. Написать @BotFather в Telegram, команда /newbot
-// 2. Скопировать токен в .env как TELEGRAM_BOT_TOKEN
-//
-// Как получить TELEGRAM_MANAGER_CHAT_ID:
-// 1. Менеджер пишет что угодно созданному боту
-// 2. Открыть https://api.telegram.org/bot<TOKEN>/getUpdates
-// 3. Найти "chat":{"id": ...} — это и есть chat_id
+import { getSiteSettings } from "./settings";
 
 interface RequestNotificationPayload {
   requestId: string;
@@ -22,12 +13,13 @@ interface RequestNotificationPayload {
 }
 
 export async function notifyManagerNewRequest(payload: RequestNotificationPayload) {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_MANAGER_CHAT_ID;
+  const settings = await getSiteSettings();
+  const token = settings.telegramBotToken;
+  const chatId = settings.telegramManagerChatId;
 
   if (!token || !chatId) {
     console.warn(
-      "[telegram] TELEGRAM_BOT_TOKEN / TELEGRAM_MANAGER_CHAT_ID не заданы — уведомление не отправлено"
+      "[telegram] Токен бота или Chat ID не заданы — настройте их в Админка → Настройки"
     );
     return;
   }
