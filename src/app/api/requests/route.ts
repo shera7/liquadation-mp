@@ -19,6 +19,9 @@ const requestSchema = z.object({
   interestedCategory: z.string().optional(),
   budget: z.string().optional(),
   comment: z.string().optional(),
+  // Поля защиты от спама — не относятся к бизнес-данным заявки
+  website: z.string().optional(), // honeypot: должно быть всегда пустым
+  formLoadedAt: z.number().optional(), // время открытия формы (ms)
 });
 
 export async function POST(req: NextRequest) {
@@ -31,8 +34,36 @@ export async function POST(req: NextRequest) {
 
   const data = parsed.data;
 
-  // Простая защита от спама: обязательно указан телефон + непустое имя.
-  // Для продакшена — добавить rate-limit по IP и/или honeypot-поле (Фаза 3, раздел 25 ТЗ).
+  // Honeypot: если это поле заполнено — значит, форму отправил бот.
+  // Отвечаем "успехом", чтобы не подсказывать боту, что его поймали.
+  if (data.website) {
+    return NextResponse.json({ ok: true, id: "ignored" }, { status: 201 });
+  }
+
+  // Слишком быстрая отправка (меньше 3 секунд с открытия формы) — тоже похоже на бота
+  if (data.formLoadedAt && Date.now() - data.formLoadedAt < 3000) {
+    return NextResponse.json({ ok: true, id: "ignored" }, { status: 201 });
+  }
+
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown";
+
+  // Rate-limit: не более 3 заявок с одного IP за 5 минут
+  const recentCount = await prisma.request.count({
+    where: {
+      ip,
+      createdAt: { gte: new Date(Date.now() - 5 * 60 * 1000) },
+    },
+  });
+
+  if (recentCount >= 3) {
+    return NextResponse.json(
+      { error: "Слишком много заявок подряд. Попробуйте немного позже." },
+      { status: 429 }
+    );
+  }
 
   const created = await prisma.request.create({
     data: {
@@ -50,10 +81,10 @@ export async function POST(req: NextRequest) {
       interestedCategory: data.interestedCategory,
       budget: data.budget,
       comment: data.comment,
+      ip,
     },
   });
 
-  // Уведомление менеджеру в Telegram — не блокируем ответ пользователю при ошибке отправки
   try {
     let productTitle: string | undefined;
     let price: string | undefined;
@@ -86,7 +117,6 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true, id: created.id }, { status: 201 });
 }
 
-// GET /api/requests — список заявок для CRM-раздела админки
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const status = searchParams.get("status");
