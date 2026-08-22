@@ -1,85 +1,59 @@
 import { prisma } from "@/lib/prisma";
-import RequestStatusSelect from "@/components/admin/RequestStatusSelect";
+import Link from "next/link";
+import { getSlaRulesMap, computeSlaState } from "@/lib/sla";
 
 export const dynamic = "force-dynamic";
 
-interface AdminRequestsPageProps {
-  searchParams: { status?: string };
-}
+export default async function RequestsDashboardPage() {
+  const [allRequests, getRule] = await Promise.all([
+    prisma.request.findMany({ select: { id: true, type: true, status: true, statusChangedAt: true } }),
+    getSlaRulesMap(),
+  ]);
 
-export default async function AdminRequestsPage({ searchParams }: AdminRequestsPageProps) {
-  const requests = await prisma.request.findMany({
-    where: searchParams.status ? { status: searchParams.status as any } : undefined,
-    orderBy: { createdAt: "desc" },
-    include: {
-      product: { select: { title: true, slug: true } },
-      ndaAcceptance: { select: { id: true, ndaVersion: true, telegramUsername: true, telegramId: true } },
-    },
-    take: 100,
-  });
+  let ok = 0, warning = 0, breached = 0, newCount = 0, inProgress = 0;
+  for (const r of allRequests) {
+    if (r.status === "NEW") newCount++;
+    if (r.status === "IN_PROGRESS") inProgress++;
+    const sla = computeSlaState(r.statusChangedAt, getRule(r.status));
+    if (sla.state === "ok") ok++;
+    else if (sla.state === "warning") warning++;
+    else if (sla.state === "breached") breached++;
+  }
+
+  const productCount = allRequests.filter((r) => r.type === "PRODUCT").length;
+  const generalCount = allRequests.filter((r) => r.type === "GENERAL").length;
+
+  const cards = [
+    { label: "Всего заявок", value: allRequests.length },
+    { label: "Новые", value: newCount },
+    { label: "В работе", value: inProgress },
+    { label: "SLA в норме", value: ok },
+    { label: "SLA под угрозой", value: warning },
+    { label: "SLA просрочен", value: breached },
+  ];
 
   return (
     <div>
-      <h1 className="font-display font-800 text-2xl text-graphite mb-6">Заявки</h1>
+      <h1 className="font-display font-800 text-2xl text-graphite mb-6">Заявки — обзор SLA</h1>
 
-      <div className="bg-white border border-line rounded-sm overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-concrete text-steel text-left">
-            <tr>
-              <th className="px-4 py-3 font-medium">Дата</th>
-              <th className="px-4 py-3 font-medium">Клиент</th>
-              <th className="px-4 py-3 font-medium">Телефон</th>
-              <th className="px-4 py-3 font-medium">Товар</th>
-              <th className="px-4 py-3 font-medium">NDA</th>
-              <th className="px-4 py-3 font-medium">Комментарий</th>
-              <th className="px-4 py-3 font-medium">Статус</th>
-            </tr>
-          </thead>
-          <tbody>
-            {requests.map((r) => (
-              <tr key={r.id} className="border-t border-line align-top">
-                <td className="px-4 py-3 text-steel whitespace-nowrap">
-                  {new Date(r.createdAt).toLocaleString("ru-RU")}
-                </td>
-                <td className="px-4 py-3">
-                  <div className="font-medium text-graphite">{r.name}</div>
-                  {r.company && <div className="text-xs text-steel">{r.company}</div>}
-                </td>
-                <td className="px-4 py-3 font-mono text-xs">{r.phone}</td>
-                <td className="px-4 py-3 text-steel">
-                  {r.product?.title ?? (
-                    <span className="italic">
-                      Общая заявка{r.interestedCategory ? ` · ${r.interestedCategory}` : ""}
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3">
-                  {r.ndaAcceptance ? (
-                    <div className="text-xs">
-                      <div className="font-mono text-graphite">
-                        №{r.ndaAcceptance.id.slice(-6)} · v{r.ndaAcceptance.ndaVersion}
-                      </div>
-                      <div className="text-steel">
-                        {r.ndaAcceptance.telegramUsername
-                          ? `@${r.ndaAcceptance.telegramUsername}`
-                          : `ID ${r.ndaAcceptance.telegramId}`}
-                      </div>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-steel">—</span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-steel max-w-xs truncate">{r.comment}</td>
-                <td className="px-4 py-3">
-                  <RequestStatusSelect requestId={r.id} currentStatus={r.status} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {requests.length === 0 && (
-          <div className="p-10 text-center text-steel text-sm">Заявок пока нет</div>
-        )}
+      <div className="grid sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+        {cards.map((c) => (
+          <div key={c.label} className="bg-white border border-line rounded-sm p-4">
+            <div className="text-2xl font-display font-800 text-graphite">{c.value}</div>
+            <div className="text-xs text-steel mt-1">{c.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        <Link href="/admin/requests/product" className="bg-white border border-line rounded-sm p-6 hover:border-amber transition-colors">
+          <div className="text-2xl font-display font-800 text-graphite">{productCount}</div>
+          <div className="text-sm text-steel mt-1">Заявки на товар</div>
+        </Link>
+        <Link href="/admin/requests/general" className="bg-white border border-line rounded-sm p-6 hover:border-amber transition-colors">
+          <div className="text-2xl font-display font-800 text-graphite">{generalCount}</div>
+          <div className="text-sm text-steel mt-1">Общие заявки</div>
+        </Link>
       </div>
     </div>
   );
