@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import RequestStatusSelect from "@/components/admin/RequestStatusSelect";
 
+export const dynamic = "force-dynamic";
+
 interface AdminRequestsPageProps {
   searchParams: { status?: string };
 }
@@ -9,7 +11,10 @@ export default async function AdminRequestsPage({ searchParams }: AdminRequestsP
   const requests = await prisma.request.findMany({
     where: searchParams.status ? { status: searchParams.status as any } : undefined,
     orderBy: { createdAt: "desc" },
-    include: { product: { select: { title: true, slug: true } } },
+    include: {
+      product: { select: { title: true, slug: true } },
+      ndaAcceptance: { select: { id: true, ndaVersion: true, telegramUsername: true, telegramId: true } },
+    },
     take: 100,
   });
 
@@ -25,6 +30,7 @@ export default async function AdminRequestsPage({ searchParams }: AdminRequestsP
               <th className="px-4 py-3 font-medium">Клиент</th>
               <th className="px-4 py-3 font-medium">Телефон</th>
               <th className="px-4 py-3 font-medium">Товар</th>
+              <th className="px-4 py-3 font-medium">NDA</th>
               <th className="px-4 py-3 font-medium">Комментарий</th>
               <th className="px-4 py-3 font-medium">Статус</th>
             </tr>
@@ -45,6 +51,22 @@ export default async function AdminRequestsPage({ searchParams }: AdminRequestsP
                     <span className="italic">
                       Общая заявка{r.interestedCategory ? ` · ${r.interestedCategory}` : ""}
                     </span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  {r.ndaAcceptance ? (
+                    <div className="text-xs">
+                      <div className="font-mono text-graphite">
+                        №{r.ndaAcceptance.id.slice(-6)} · v{r.ndaAcceptance.ndaVersion}
+                      </div>
+                      <div className="text-steel">
+                        {r.ndaAcceptance.telegramUsername
+                          ? `@${r.ndaAcceptance.telegramUsername}`
+                          : `ID ${r.ndaAcceptance.telegramId}`}
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-steel">—</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-steel max-w-xs truncate">{r.comment}</td>
