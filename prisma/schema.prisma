@@ -191,6 +191,9 @@ model SiteSettings {
   telegramManagerChatId String?
   telegramBotUsername   String?
   updatedAt             DateTime @updatedAt
+  ndaBotToken      String?
+  ndaBotUsername   String?
+  ndaWebhookSecret String?
 }
 
 enum NdaDocumentStatus {
@@ -231,4 +234,23 @@ model NdaAcceptance {
   requests           Request[]
 
   @@index([telegramId])
+}
+
+model NdaOtpSession {
+  id                String    @id @default(cuid())
+  token             String    @unique
+  ip                String?
+  ndaDocumentId     String?
+  telegramChatId    String?
+  telegramUsername  String?
+  telegramFirstName String?
+  codeHash          String?
+  codeSentAt        DateTime?
+  expiresAt         DateTime?
+  attempts          Int       @default(0)
+  verifiedAt        DateTime?
+  createdAt         DateTime  @default(now())
+
+  @@index([token])
+  @@index([ip])
 }
