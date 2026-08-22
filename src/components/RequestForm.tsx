@@ -18,6 +18,7 @@ const MODE_LABELS: Record<string, string> = {
 interface StoredNda {
   acceptanceId: string;
   telegramId: string;
+  telegramUsername?: string | null;
   ndaVersion: string;
 }
 
@@ -60,8 +61,8 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
     setStage("nda");
   }
 
-  function handleNdaSigned(acceptanceId: string, telegramId: string) {
-    setNdaData({ acceptanceId, telegramId, ndaVersion: "" });
+  function handleNdaSigned(acceptanceId: string, telegramId: string, telegramUsername?: string | null) {
+    setNdaData({ acceptanceId, telegramId, telegramUsername, ndaVersion: "" });
     setStage("form");
   }
 
