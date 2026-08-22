@@ -10,7 +10,7 @@ interface NdaDocument {
 }
 
 interface NdaGateProps {
-  onSigned: (acceptanceId: string, telegramId: string) => void;
+  onSigned: (acceptanceId: string, telegramId: string, telegramUsername?: string | null) => void;
   onCancel: () => void;
 }
 
