@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
     ok: true,
     acceptanceId: acceptance.id,
     telegramId: acceptance.telegramId,
+    telegramUsername: acceptance.telegramUsername,
     ndaVersion: acceptance.ndaVersion,
   });
 }
