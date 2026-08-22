@@ -15,6 +15,9 @@ export async function getSiteSettings() {
       telegramBotToken: null,
       telegramManagerChatId: null,
       telegramBotUsername: null,
+      ndaBotToken: null,
+      ndaBotUsername: null,
+      ndaWebhookSecret: null,
     }
   );
 }
