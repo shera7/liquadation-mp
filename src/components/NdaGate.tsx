@@ -131,7 +131,7 @@ export default function NdaGate({ onSigned, onCancel }: NdaGateProps) {
           </div>
           {deepLink && (
             
-              href={deepLink}
+              <a href={deepLink}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-amber text-graphite font-semibold px-5 py-2.5 rounded-sm hover:bg-amber-dark"
