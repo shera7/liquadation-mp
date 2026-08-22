@@ -111,7 +111,11 @@ export async function POST(req: NextRequest) {
       ndaAcceptanceId: data.ndaAcceptanceId,
     },
   });
-
+  
+  const year = created.createdAt.getFullYear();
+  const requestNumber = `REQ-${year}-${String(created.seq).padStart(6, "0")}`;
+  await prisma.request.update({ where: { id: created.id }, data: { requestNumber } });
+  
   try {
     let productTitle: string | undefined;
     let price: string | undefined;
