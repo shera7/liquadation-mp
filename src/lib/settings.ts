@@ -28,6 +28,9 @@ export async function upsertSiteSettings(data: {
   telegramBotToken?: string | null;
   telegramManagerChatId?: string | null;
   telegramBotUsername?: string | null;
+  ndaBotToken?: string | null; 
+  ndaBotUsername?: string | null;
+  ndaWebhookSecret?: string | null;
 }) {
   return prisma.siteSettings.upsert({
     where: { id: SETTINGS_ID },
