@@ -39,7 +39,9 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       contactWhatsapp: form.get("contactWhatsapp") || null,
       telegramBotToken: form.get("telegramBotToken") || null,
       telegramManagerChatId: form.get("telegramManagerChatId") || null,
-      telegramBotUsername: form.get("telegramBotUsername") || null,
+      ndaBotToken: form.get("ndaBotToken") || null,
+      ndaBotUsername: form.get("ndaBotUsername") || null,
+      ndaWebhookSecret: form.get("ndaWebhookSecret") || null,
     };
 
     const res = await fetch("/api/admin/settings", {
@@ -100,14 +102,6 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
             className="input"
           />
         </Field>
-        <Field label="Username бота (без @, нужен для входа через Telegram на сайте)">
-          <input
-            name="telegramBotUsername"
-            defaultValue={settings.telegramBotUsername ?? ""}
-            placeholder="my_asset_bot"
-            className="input"
-          />
-        </Field>
 
         <details className="text-xs text-steel">
           <summary className="cursor-pointer text-amber-dark">Как получить эти значения?</summary>
@@ -120,6 +114,22 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
         </details>
       </div>
 
+            <div className="bg-white border border-line rounded-sm p-6 space-y-4">
+        <h2 className="font-display font-700 text-graphite">NDA-бот (отдельный бот для кода подтверждения)</h2>
+        <Field label="Токен NDA-бота">
+          <input name="ndaBotToken" defaultValue={settings.ndaBotToken ?? ""} placeholder="123456:BB..." className="input" />
+        </Field>
+        <Field label="Username NDA-бота (без @)">
+          <input name="ndaBotUsername" defaultValue={settings.ndaBotUsername ?? ""} placeholder="my_nda_bot" className="input" />
+        </Field>
+        <Field label="Секрет вебхука (любая случайная строка)">
+          <input name="ndaWebhookSecret" defaultValue={settings.ndaWebhookSecret ?? ""} placeholder="случайная-строка-32-символа" className="input" />
+        </Field>
+        <p className="text-xs text-steel">
+          Это должен быть отдельный бот, не тот, что шлёт уведомления менеджеру. Создайте нового через @BotFather.
+        </p>
+      </div>
+      
       {error && <div className="text-alert text-sm">{error}</div>}
       {saved && <div className="text-okgreen text-sm">Настройки сохранены</div>}
 
