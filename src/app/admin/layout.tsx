@@ -37,9 +37,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen bg-concrete flex">
       <aside className="w-60 shrink-0 bg-graphite text-steelLight min-h-screen p-4 flex flex-col">
-        <div className="font-display font-800 text-white px-3 mb-2">
-          АКТИВ<span className="text-amber">.</span>АДМИН
-        </div>
 
         <nav className="flex-1">
           <Link href="/admin" className="block px-3 py-2 rounded-sm text-sm hover:bg-white/10 hover:text-white transition-colors">
