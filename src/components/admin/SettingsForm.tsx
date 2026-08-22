@@ -11,8 +11,10 @@ interface SettingsFormProps {
     contactTelegram: string | null;
     contactWhatsapp: string | null;
     telegramBotToken: string | null;
-    telegramManagerChatId: string | null;
-    telegramBotUsername: string | null;
+    telegramManagerChatId: string | null;    
+    ndaBotToken: string | null;
+    ndaBotUsername: string | null;
+    ndaWebhookSecret: string | null;
   };
 }
 
