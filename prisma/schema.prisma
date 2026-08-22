@@ -140,6 +140,16 @@ model Request {
   company       String?
   phone         String
   ip            String?
+
+  seq             Int      @unique @default(autoincrement())
+  requestNumber   String?  @unique
+  assigneeId      String?
+  assigneeName    String?
+  statusChangedAt DateTime @default(now())
+
+  history  RequestHistory[]
+  comments RequestComment[]
+
   ndaAcceptanceId String?
   ndaAcceptance   NdaAcceptance? @relation(fields: [ndaAcceptanceId], references: [id])
   telegram      String?
