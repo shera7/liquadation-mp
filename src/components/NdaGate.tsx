@@ -94,8 +94,6 @@ export default function NdaGate({ onSigned, onCancel }: NdaGateProps) {
     );
 
     onSigned(data.acceptanceId, data.telegramId, data.telegramUsername);
-
-    onSigned(data.acceptanceId, data.telegramId);
   }
 
   if (loading) return <div className="text-sm text-steel py-4">Загрузка...</div>;
