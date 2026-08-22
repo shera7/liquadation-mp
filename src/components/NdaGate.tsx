@@ -88,9 +88,12 @@ export default function NdaGate({ onSigned, onCancel }: NdaGateProps) {
       JSON.stringify({
         acceptanceId: data.acceptanceId,
         telegramId: data.telegramId,
+        telegramUsername: data.telegramUsername,
         ndaVersion: data.ndaVersion,
       })
     );
+
+    onSigned(data.acceptanceId, data.telegramId, data.telegramUsername);
 
     onSigned(data.acceptanceId, data.telegramId);
   }
