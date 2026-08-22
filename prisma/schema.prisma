@@ -254,3 +254,36 @@ model NdaOtpSession {
   @@index([token])
   @@index([ip])
 }
+
+model SlaRule {
+  status    RequestStatus @id
+  hours     Int           @default(24)
+  isFinal   Boolean       @default(false)
+  updatedAt DateTime      @updatedAt
+}
+
+model RequestHistory {
+  id             String         @id @default(cuid())
+  requestId      String
+  request        Request        @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  changedById    String?
+  changedByName  String?
+  previousStatus RequestStatus?
+  newStatus      RequestStatus
+  comment        String?
+  createdAt      DateTime       @default(now())
+
+  @@index([requestId])
+}
+
+model RequestComment {
+  id         String   @id @default(cuid())
+  requestId  String
+  request    Request  @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  authorId   String?
+  authorName String
+  text       String   @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([requestId])
+}
