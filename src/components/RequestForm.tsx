@@ -158,7 +158,7 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
 
       {ndaData && (
         <div className="text-[11px] text-okgreen bg-okgreen/10 rounded-sm px-2 py-1">
-          ✓ NDA подтверждён через Telegram
+          ✓ NDA подтверждён через Telegram{ndaData.telegramUsername ? ` (@${ndaData.telegramUsername})` : ""}
         </div>
       )}
 
