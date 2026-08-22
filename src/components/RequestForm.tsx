@@ -166,7 +166,12 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
       <input name="company" placeholder="Компания" className="input" />
       <div className="grid grid-cols-2 gap-2">
         <input name="phone" required placeholder="Телефон *" className="input" />
-        <input name="telegram" placeholder="Telegram / WhatsApp" className="input" />
+        <input
+          name="telegram"
+          placeholder="Telegram / WhatsApp"
+          defaultValue={ndaData?.telegramUsername ? `@${ndaData.telegramUsername}` : ""}
+          className="input"
+        />
       </div>
       <input name="email" type="email" placeholder="Email" className="input" />
       <div className="grid grid-cols-2 gap-2">
