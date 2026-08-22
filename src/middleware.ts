@@ -4,17 +4,17 @@ import { verifySessionToken } from "@/lib/auth";
 const PROTECTED_API_RULES: { prefix: string; methods: string[] }[] = [
   { prefix: "/api/products", methods: ["POST", "PATCH", "DELETE"] },
   { prefix: "/api/categories", methods: ["POST", "PATCH", "DELETE"] },
-  { prefix: "/api/requests", methods: ["GET", "PATCH"] },
+  { prefix: "/api/requests/", methods: ["GET", "POST", "PATCH", "DELETE"] },
+  { prefix: "/api/requests", methods: ["GET"] },
   { prefix: "/api/admin", methods: ["GET", "POST", "PATCH", "DELETE"] },
 ];
 
+
 const FULL_ONLY_PREFIXES = [
-  "/admin/employees",
-  "/api/admin/employees",
-  "/admin/settings",
-  "/api/admin/settings",
-  "/admin/nda",
-  "/api/admin/nda-documents",
+  "/admin/employees", "/api/admin/employees",
+  "/admin/settings", "/api/admin/settings",
+  "/admin/nda", "/api/admin/nda-documents",
+  "/admin/sla", "/api/admin/sla-rules",
 ];
 
 export async function middleware(req: NextRequest) {
