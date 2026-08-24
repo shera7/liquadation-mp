@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      if (compareVersions(acceptance.ndaVersion, activeNda.version) < 0) {
+      if (activeNda && compareVersions(acceptance.ndaVersion, activeNda.version) < 0) {
         return NextResponse.json(
           { error: "Требуется подтвердить актуальную версию NDA", code: "NDA_UPDATE_REQUIRED" },
           { status: 403 }
