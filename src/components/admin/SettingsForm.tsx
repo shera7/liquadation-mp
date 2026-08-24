@@ -24,6 +24,7 @@ interface SettingsFormProps {
     usdToUzsRateDate: string | null;
     usdToUzsUpdatedAt: string | null;
     currencyRateSource: string;
+    ndaMinPriceUsd: number | null;
   };
 }
 
@@ -102,6 +103,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       ogImageUrl,
       currencyRateSource: rateSource,
       ...(rateSource === "manual" ? { usdToUzsRate: Number(manualRate) || null } : {}),
+      ndaMinPriceUsd: form.get("ndaMinPriceUsd") ? Number(form.get("ndaMinPriceUsd")) : null,
     };
 
     const res = await fetch("/api/admin/settings", {
@@ -257,6 +259,23 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
         </div>
       </div>
 
+      <div className="bg-white border border-line rounded-sm p-6 space-y-4">
+        <h2 className="font-display font-700 text-graphite">Порог NDA</h2>
+        <Field label="Минимальная цена товара для обязательного NDA (в USD)">
+          <input
+            name="ndaMinPriceUsd"
+            type="number"
+            step="0.01"
+            defaultValue={settings.ndaMinPriceUsd ?? ""}
+            placeholder="Оставьте пустым — NDA требуется для всех товаров"
+            className="input"
+          />
+        </Field>
+        <p className="text-xs text-steel">
+          Заявки на товары дешевле указанной суммы не будут требовать подписания NDA. Цена товара в UZS конвертируется по текущему курсу.
+        </p>
+      </div>
+      
       <div className="bg-white border border-line rounded-sm p-6 space-y-4">
         <h2 className="font-display font-700 text-graphite">Telegram-уведомления о заявках</h2>
         <Field label="Токен бота">
