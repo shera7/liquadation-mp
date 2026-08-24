@@ -212,6 +212,7 @@ model SiteSettings {
   usdToUzsRateDate   String?
   usdToUzsUpdatedAt  DateTime?
   currencyRateSource String    @default("auto")
+  ndaMinPriceUsd Decimal? @db.Decimal(14, 2)
 }
 
 enum NdaDocumentStatus {
