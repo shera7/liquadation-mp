@@ -59,7 +59,7 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
     }
 
     setStage("nda");
-
+  }
   function handleNdaSigned(acceptanceId: string, telegramId: string, telegramUsername?: string | null) {
     setNdaData({ acceptanceId, telegramId, telegramUsername, ndaVersion: "" });
     setStage("form");
