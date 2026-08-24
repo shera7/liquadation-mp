@@ -48,3 +48,29 @@ export function verifyTelegramAuth(data: TelegramAuthData, botToken: string): bo
 
   return true;
 }
+
+export function isNdaRequiredForProduct(
+  product: { price: number | string | null; currency: "USD" | "UZS"; priceOnRequest: boolean },
+  ndaMinPriceUsd: number | null,
+  usdToUzsRate: number | null
+): boolean {
+  // Порог не задан — NDA требуется для всех товаров (текущее поведение по умолчанию)
+  if (ndaMinPriceUsd === null) return true;
+
+  // Цена неизвестна ("по запросу") — безопаснее требовать NDA
+  if (product.priceOnRequest || product.price === null) return true;
+
+  const priceValue = typeof product.price === "string" ? parseFloat(product.price) : product.price;
+
+  let priceInUsd: number | null;
+  if (product.currency === "USD") {
+    priceInUsd = priceValue;
+  } else {
+    priceInUsd = usdToUzsRate ? priceValue / usdToUzsRate : null;
+  }
+
+  // Нет курса для конвертации — безопаснее требовать NDA
+  if (priceInUsd === null) return true;
+
+  return priceInUsd >= ndaMinPriceUsd;
+}
