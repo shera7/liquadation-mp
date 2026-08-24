@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
           rate
         );
       }
-
+    }
     if (ndaRequired) {
       if (!data.ndaAcceptanceId || !data.ndaTelegramId) {
         return NextResponse.json(
