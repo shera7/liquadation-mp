@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { uploadProductImage } from "@/lib/uploadImage";
 
 interface SettingsFormProps {
   settings: {
@@ -11,10 +12,14 @@ interface SettingsFormProps {
     contactTelegram: string | null;
     contactWhatsapp: string | null;
     telegramBotToken: string | null;
-    telegramManagerChatId: string | null;    
+    telegramManagerChatId: string | null;
     ndaBotToken: string | null;
     ndaBotUsername: string | null;
     ndaWebhookSecret: string | null;
+    faviconUrl: string | null;
+    metaTitle: string | null;
+    metaDescription: string | null;
+    ogImageUrl: string | null;
   };
 }
 
@@ -23,6 +28,35 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [faviconUrl, setFaviconUrl] = useState(settings.faviconUrl);
+  const [ogImageUrl, setOgImageUrl] = useState(settings.ogImageUrl);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
+  const [uploadingOg, setUploadingOg] = useState(false);
+
+  async function handleFaviconUpload(file: File | null) {
+    if (!file) return;
+    setUploadingFavicon(true);
+    try {
+      const url = await uploadProductImage(file);
+      setFaviconUrl(url);
+    } catch (e: any) {
+      setError(e.message || "Не удалось загрузить favicon");
+    }
+    setUploadingFavicon(false);
+  }
+
+  async function handleOgUpload(file: File | null) {
+    if (!file) return;
+    setUploadingOg(true);
+    try {
+      const url = await uploadProductImage(file);
+      setOgImageUrl(url);
+    } catch (e: any) {
+      setError(e.message || "Не удалось загрузить изображение");
+    }
+    setUploadingOg(false);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -42,6 +76,10 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       ndaBotToken: form.get("ndaBotToken") || null,
       ndaBotUsername: form.get("ndaBotUsername") || null,
       ndaWebhookSecret: form.get("ndaWebhookSecret") || null,
+      metaTitle: form.get("metaTitle") || null,
+      metaDescription: form.get("metaDescription") || null,
+      faviconUrl,
+      ogImageUrl,
     };
 
     const res = await fetch("/api/admin/settings", {
@@ -85,36 +123,87 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       </div>
 
       <div className="bg-white border border-line rounded-sm p-6 space-y-4">
-        <h2 className="font-display font-700 text-graphite">Telegram-уведомления о заявках</h2>
-        <Field label="Токен бота">
+        <h2 className="font-display font-700 text-graphite">SEO и брендинг</h2>
+
+        <Field label="Meta title (заголовок в поисковиках и вкладке браузера)">
           <input
-            name="telegramBotToken"
-            defaultValue={settings.telegramBotToken ?? ""}
-            placeholder="123456:AA..."
+            name="metaTitle"
+            defaultValue={settings.metaTitle ?? ""}
+            placeholder={`${settings.siteName} — Имущество и оборудование по специальным ценам`}
             className="input"
           />
         </Field>
-        <Field label="Chat ID менеджера">
-          <input
-            name="telegramManagerChatId"
-            defaultValue={settings.telegramManagerChatId ?? ""}
-            placeholder="123456789"
+        <Field label="Meta description (описание для поисковиков)">
+          <textarea
+            name="metaDescription"
+            defaultValue={settings.metaDescription ?? ""}
+            rows={2}
+            placeholder="Оборудование, материалы, запчасти и другие активы в наличии..."
             className="input"
           />
         </Field>
 
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <span className="block text-xs font-medium text-steel mb-1">Favicon (иконка вкладки, квадратная, PNG)</span>
+            <div className="flex items-center gap-3">
+              {faviconUrl && (
+                <img src={faviconUrl} alt="Favicon" className="w-8 h-8 border border-line rounded-sm object-cover" />
+              )}
+              <label className="text-xs border border-dashed border-line rounded-sm px-3 py-1.5 cursor-pointer hover:border-amber text-steel">
+                {uploadingFavicon ? "Загрузка..." : faviconUrl ? "Заменить" : "Загрузить"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingFavicon}
+                  onChange={(e) => handleFaviconUpload(e.target.files?.[0] ?? null)}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <span className="block text-xs font-medium text-steel mb-1">OG-изображение (превью при шаринге в соцсетях)</span>
+            <div className="flex items-center gap-3">
+              {ogImageUrl && (
+                <img src={ogImageUrl} alt="OG" className="w-14 h-8 border border-line rounded-sm object-cover" />
+              )}
+              <label className="text-xs border border-dashed border-line rounded-sm px-3 py-1.5 cursor-pointer hover:border-amber text-steel">
+                {uploadingOg ? "Загрузка..." : ogImageUrl ? "Заменить" : "Загрузить"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploadingOg}
+                  onChange={(e) => handleOgUpload(e.target.files?.[0] ?? null)}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white border border-line rounded-sm p-6 space-y-4">
+        <h2 className="font-display font-700 text-graphite">Telegram-уведомления о заявках</h2>
+        <Field label="Токен бота">
+          <input name="telegramBotToken" defaultValue={settings.telegramBotToken ?? ""} placeholder="123456:AA..." className="input" />
+        </Field>
+        <Field label="Chat ID менеджера">
+          <input name="telegramManagerChatId" defaultValue={settings.telegramManagerChatId ?? ""} placeholder="123456789" className="input" />
+        </Field>
         <details className="text-xs text-steel">
           <summary className="cursor-pointer text-amber-dark">Как получить эти значения?</summary>
           <ol className="list-decimal pl-4 mt-2 space-y-1">
             <li>В Telegram напишите @BotFather, команда /newbot — получите токен</li>
             <li>Менеджер пишет что угодно вашему новому боту</li>
-            <li>Откройте в браузере: https://api.telegram.org/bot&lt;ТОКЕН&gt;/getUpdates</li>
-            <li>Найдите в ответе "chat":{"{"}"id": ...{"}"} — это и есть Chat ID</li>
+            <li>Откройте: https://api.telegram.org/bot&lt;ТОКЕН&gt;/getUpdates</li>
+            <li>Найдите "chat":{"{"}"id": ...{"}"} — это Chat ID</li>
           </ol>
         </details>
       </div>
 
-            <div className="bg-white border border-line rounded-sm p-6 space-y-4">
+      <div className="bg-white border border-line rounded-sm p-6 space-y-4">
         <h2 className="font-display font-700 text-graphite">NDA-бот (отдельный бот для кода подтверждения)</h2>
         <Field label="Токен NDA-бота">
           <input name="ndaBotToken" defaultValue={settings.ndaBotToken ?? ""} placeholder="123456:BB..." className="input" />
@@ -122,14 +211,11 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
         <Field label="Username NDA-бота (без @)">
           <input name="ndaBotUsername" defaultValue={settings.ndaBotUsername ?? ""} placeholder="my_nda_bot" className="input" />
         </Field>
-        <Field label="Секрет вебхука (любая случайная строка)">
-          <input name="ndaWebhookSecret" defaultValue={settings.ndaWebhookSecret ?? ""} placeholder="случайная-строка-32-символа" className="input" />
+        <Field label="Секрет вебхука">
+          <input name="ndaWebhookSecret" defaultValue={settings.ndaWebhookSecret ?? ""} className="input" />
         </Field>
-        <p className="text-xs text-steel">
-          Это должен быть отдельный бот, не тот, что шлёт уведомления менеджеру. Создайте нового через @BotFather.
-        </p>
       </div>
-      
+
       {error && <div className="text-alert text-sm">{error}</div>}
       {saved && <div className="text-okgreen text-sm">Настройки сохранены</div>}
 
