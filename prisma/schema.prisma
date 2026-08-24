@@ -208,6 +208,10 @@ model SiteSettings {
   metaTitle       String?
   metaDescription String?
   ogImageUrl      String?
+  usdToUzsRate       Decimal?  @db.Decimal(14, 4)
+  usdToUzsRateDate   String?
+  usdToUzsUpdatedAt  DateTime?
+  currencyRateSource String    @default("auto")
 }
 
 enum NdaDocumentStatus {
