@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { getEffectiveUsdRate } from "@/lib/exchangeRate";
 import ProductCard from "@/components/ProductCard";
 import Filters from "@/components/Filters";
 import SearchBar from "@/components/SearchBar";
@@ -67,7 +68,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       ? { viewsCount: "desc" }
       : { createdAt: "desc" };
 
-  const [products, total, categories] = await Promise.all([
+  const [products, total, categories, { rate: usdToUzsRate }] = await Promise.all([
     prisma.product.findMany({
       where,
       orderBy,
@@ -81,6 +82,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       orderBy: { sortOrder: "asc" },
       include: { children: { orderBy: { sortOrder: "asc" } } },
     }),
+        getEffectiveUsdRate(),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -110,7 +112,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
               {products.map((p) => (
                 // @ts-expect-error Decimal -> number сериализация из Prisma
-                <ProductCard key={p.id} product={p} />
+                <ProductCard key={p.id} product={p} usdToUzsRate={usdToUzsRate} />
               ))}
             </div>
           )}
