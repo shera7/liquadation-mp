@@ -20,6 +20,10 @@ interface SettingsFormProps {
     metaTitle: string | null;
     metaDescription: string | null;
     ogImageUrl: string | null;
+    usdToUzsRate: number | null;
+    usdToUzsRateDate: string | null;
+    usdToUzsUpdatedAt: string | null;
+    currencyRateSource: string;
   };
 }
 
@@ -33,6 +37,22 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
   const [ogImageUrl, setOgImageUrl] = useState(settings.ogImageUrl);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const [uploadingOg, setUploadingOg] = useState(false);
+
+  const [rateSource, setRateSource] = useState(settings.currencyRateSource);
+  const [manualRate, setManualRate] = useState(settings.usdToUzsRate?.toString() ?? "");
+  const [refreshingRate, setRefreshingRate] = useState(false);
+  const [currentRate, setCurrentRate] = useState(settings.usdToUzsRate);
+
+  async function handleRefreshRate() {
+    setRefreshingRate(true);
+    const res = await fetch("/api/admin/exchange-rate/refresh", { method: "POST" });
+    const data = await res.json();
+    setRefreshingRate(false);
+    if (res.ok) {
+      setCurrentRate(data.rate);
+      router.refresh();
+    }
+  }
 
   async function handleFaviconUpload(file: File | null) {
     if (!file) return;
@@ -80,6 +100,8 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       metaDescription: form.get("metaDescription") || null,
       faviconUrl,
       ogImageUrl,
+      currencyRateSource: rateSource,
+      ...(rateSource === "manual" ? { usdToUzsRate: Number(manualRate) || null } : {}),
     };
 
     const res = await fetch("/api/admin/settings", {
@@ -120,6 +142,57 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
             <input name="contactWhatsapp" defaultValue={settings.contactWhatsapp ?? ""} className="input" />
           </Field>
         </div>
+      </div>
+
+            <div className="bg-white border border-line rounded-sm p-6 space-y-4">
+        <h2 className="font-display font-700 text-graphite">Курс валюты (USD → UZS)</h2>
+
+        <div className="flex items-center justify-between bg-concrete rounded-sm p-4">
+          <div>
+            <div className="text-2xl font-display font-800 text-graphite">
+              {currentRate ? `${new Intl.NumberFormat("ru-RU").format(currentRate)} сум` : "—"}
+            </div>
+            <div className="text-xs text-steel mt-1">
+              {settings.usdToUzsRateDate ? `Курс ЦБ РУз на ${settings.usdToUzsRateDate}` : "Курс ещё не загружен"}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={handleRefreshRate}
+            disabled={refreshingRate}
+            className="text-xs bg-graphite text-white px-4 py-2 rounded-sm hover:bg-graphite2 disabled:opacity-60"
+          >
+            {refreshingRate ? "Обновление..." : "Обновить сейчас"}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-4 text-sm">
+          <label className="flex items-center gap-1.5">
+            <input type="radio" checked={rateSource === "auto"} onChange={() => setRateSource("auto")} className="accent-amber" />
+            Автоматически (ЦБ РУз)
+          </label>
+          <label className="flex items-center gap-1.5">
+            <input type="radio" checked={rateSource === "manual"} onChange={() => setRateSource("manual")} className="accent-amber" />
+            Задать вручную
+          </label>
+        </div>
+
+        {rateSource === "manual" && (
+          <Field label="Курс USD → UZS вручную">
+            <input
+              type="number"
+              step="0.01"
+              value={manualRate}
+              onChange={(e) => setManualRate(e.target.value)}
+              placeholder="12700"
+              className="input"
+            />
+          </Field>
+        )}
+
+        <p className="text-xs text-steel">
+          Курс автоматически обновляется раз в сутки с сайта Центробанка Узбекистана (cbu.uz) и используется для показа цены в обеих валютах на сайте.
+        </p>
       </div>
 
       <div className="bg-white border border-line rounded-sm p-6 space-y-4">
