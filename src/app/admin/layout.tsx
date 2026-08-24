@@ -65,6 +65,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <span>Общие</span>
               {newGeneralCount > 0 && <span className="bg-alert text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{newGeneralCount}</span>}
             </Link>
+            <Link href="/admin/requests/by-product" className="block px-3 py-2 rounded-sm text-sm hover:bg-white/10 hover:text-white transition-colors">
+              По товару
+            </Link>
           </div>
 
           {session?.role === "FULL" && (
