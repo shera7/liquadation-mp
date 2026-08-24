@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/cron/refresh-exchange-rate?secret=zK8mQ2vR9nX4pL7wB3jY6cT1sF5hD0aE", "schedule": "0 5 * * *" }
+  ]
+}
