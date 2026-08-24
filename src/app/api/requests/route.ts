@@ -4,6 +4,9 @@ import { notifyManagerNewRequest } from "@/lib/telegram";
 import { formatPrice } from "@/lib/utils";
 import { compareVersions } from "@/lib/nda";
 import { z } from "zod";
+import { getSiteSettings } from "@/lib/settings";
+import { getEffectiveUsdRate } from "@/lib/exchangeRate";
+import { isNdaRequiredForProduct } from "@/lib/nda";
 
 const requestSchema = z.object({
   type: z.enum(["PRODUCT", "GENERAL"]),
@@ -44,10 +47,27 @@ export async function POST(req: NextRequest) {
   }
 
   // Проверка NDA — только для заявок по конкретному товару
-  if (data.type === "PRODUCT") {
+  if (data.type === "PRODUCT" && data.productId) {
     const activeNda = await prisma.ndaDocument.findFirst({ where: { status: "ACTIVE" } });
 
+    let ndaRequired = Boolean(activeNda);
     if (activeNda) {
+      const product = await prisma.product.findUnique({
+        where: { id: data.productId },
+        select: { price: true, currency: true, priceOnRequest: true },
+      });
+      if (product) {
+        const settings = await getSiteSettings();
+        const { rate } = await getEffectiveUsdRate();
+        ndaRequired = isNdaRequiredForProduct(
+          { price: product.price as any, currency: product.currency, priceOnRequest: product.priceOnRequest },
+          settings.ndaMinPriceUsd ? Number(settings.ndaMinPriceUsd) : null,
+          rate
+        );
+      }
+    }
+
+    if (ndaRequired) {
       if (!data.ndaAcceptanceId || !data.ndaTelegramId) {
         return NextResponse.json(
           { error: "Требуется подтверждение NDA", code: "NDA_REQUIRED" },
