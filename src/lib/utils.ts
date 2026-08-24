@@ -63,3 +63,11 @@ export function formatDualPrice(
   }
   return { primary, secondary: `≈ $${formatter.format(Math.round(value / usdToUzsRate))}` };
 }
+
+
+export function parseOfferedPrice(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const cleaned = value.replace(/[^\d.,]/g, "").replace(/,/g, "");
+  const num = parseFloat(cleaned);
+  return Number.isNaN(num) ? null : num;
+}
