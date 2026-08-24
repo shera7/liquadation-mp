@@ -209,7 +209,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.priceOnRequest && (
                   <RequestForm productId={product.id} productTitle={product.title} mode="price" />
                 )}
-                //<RequestForm productId={product.id} productTitle={product.title} mode="question" />
+                /*<RequestForm productId={product.id} productTitle={product.title} mode="question" />*/
               </div>
             )}
           </div>
