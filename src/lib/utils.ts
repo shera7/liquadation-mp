@@ -42,3 +42,24 @@ export function formatOldPrice(
   const formatted = new Intl.NumberFormat("ru-RU").format(value);
   return currency === "USD" ? `$${formatted}` : `${formatted} сум`;
 }
+
+export function formatDualPrice(
+  price: number | string | null | undefined,
+  currency: "USD" | "UZS",
+  priceOnRequest: boolean,
+  usdToUzsRate: number | null
+): { primary: string; secondary: string | null } {
+  const primary = formatPrice(price, currency, priceOnRequest);
+
+  if (priceOnRequest || price === null || price === undefined || !usdToUzsRate) {
+    return { primary, secondary: null };
+  }
+
+  const value = typeof price === "string" ? parseFloat(price) : price;
+  const formatter = new Intl.NumberFormat("ru-RU");
+
+  if (currency === "USD") {
+    return { primary, secondary: `≈ ${formatter.format(Math.round(value * usdToUzsRate))} сум` };
+  }
+  return { primary, secondary: `≈ $${formatter.format(Math.round(value / usdToUzsRate))}` };
+}
