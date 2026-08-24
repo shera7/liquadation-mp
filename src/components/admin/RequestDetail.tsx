@@ -93,6 +93,30 @@ export default function RequestDetail({ request, admins, slaState, slaRemainingM
               <dd className="text-graphite font-mono">{request.phone}</dd>
               {request.telegram && (<><dt className="text-steel">Telegram</dt><dd className="text-graphite">{request.telegram}</dd></>)}
               {request.email && (<><dt className="text-steel">Email</dt><dd className="text-graphite">{request.email}</dd></>)}
+                           {request.quantity && (
+                <>
+                  <dt className="text-steel">Количество</dt>
+                  <dd className="text-graphite">{request.quantity}</dd>
+                </>
+              )}
+              {request.desiredPrice && (
+                <>
+                  <dt className="text-steel">Предложенная цена</dt>
+                  <dd className="text-graphite font-semibold">{request.desiredPrice}</dd>
+                </>
+              )}
+              {request.contactMethod && (
+                <>
+                  <dt className="text-steel">Способ связи</dt>
+                  <dd className="text-graphite">{request.contactMethod}</dd>
+                </>
+              )}
+              {request.budget && (
+                <>
+                  <dt className="text-steel">Бюджет</dt>
+                  <dd className="text-graphite">{request.budget}</dd>
+                </>
+              )}
               {request.product && (
                 <>
                   <dt className="text-steel">Товар</dt>
