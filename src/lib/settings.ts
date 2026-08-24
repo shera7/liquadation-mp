@@ -26,6 +26,7 @@ export async function getSiteSettings() {
       usdToUzsRateDate: null,
       usdToUzsUpdatedAt: null,
       currencyRateSource: "auto",
+      ndaMinPriceUsd: null,
     }
   );
 }
@@ -46,6 +47,7 @@ export async function upsertSiteSettings(data: {
   metaDescription?: string | null;
   ogImageUrl?: string | null;
   currencyRateSource?: string;
+  ndaMinPriceUsd?: number | null;
 }) {
   return prisma.siteSettings.upsert({
     where: { id: SETTINGS_ID },
