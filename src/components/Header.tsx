@@ -1,25 +1,24 @@
 import Link from "next/link";
 
-export default function Header() {
+export default function Header({ siteName = "Актив.Каталог" }: { siteName?: string }) {
+  const dotIndex = siteName.indexOf(".");
+  const main = dotIndex >= 0 ? siteName.slice(0, dotIndex) : siteName;
+  const rest = dotIndex >= 0 ? siteName.slice(dotIndex) : "";
+
   return (
     <header className="bg-graphite text-concrete sticky top-0 z-40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <span className="font-display font-800 text-lg tracking-tight">
-            EQUIP<span className="text-amber">.PRO</span>
+          <span className="font-display font-800 text-lg tracking-tight uppercase">
+            {main}
+            {rest && <span className="text-amber">{rest}</span>}
           </span>
         </Link>
 
         <nav className="hidden md:flex items-center gap-6 text-sm text-steelLight">
-          <Link href="/catalog" className="hover:text-white transition-colors">
-            Каталог
-          </Link>
-          <Link href="/#how-it-works" className="hover:text-white transition-colors">
-            Как купить
-          </Link>
-          <Link href="/#contacts" className="hover:text-white transition-colors">
-            Контакты
-          </Link>
+          <Link href="/catalog" className="hover:text-white transition-colors">Каталог</Link>
+          <Link href="/#how-it-works" className="hover:text-white transition-colors">Как купить</Link>
+          <Link href="/#contacts" className="hover:text-white transition-colors">Контакты</Link>
         </nav>
 
         <Link
