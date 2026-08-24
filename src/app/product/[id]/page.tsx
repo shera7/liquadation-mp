@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import { getEffectiveUsdRate } from "@/lib/exchangeRate";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { formatPrice, formatOldPrice, STATUS_LABELS, CONDITION_LABELS } from "@/lib/utils";
+import { formatPrice, formatDualPrice, formatOldPrice, STATUS_LABELS, CONDITION_LABELS } from "@/lib/utils";
 import RequestForm from "@/components/RequestForm";
 import ProductGallery from "@/components/ProductGallery";
 import StatusBadge from "@/components/StatusBadge";
@@ -42,6 +43,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const product = await getProduct(params.id);
+  const { rate: usdToUzsRate, date: rateDate } = await getEffectiveUsdRate();
   if (!product) notFound();
 
   await prisma.product.update({
@@ -160,8 +162,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
             )}
             <div className="font-mono-tabular font-800 text-3xl text-graphite mb-1">
-              {formatPrice(product.price as any, product.currency, product.priceOnRequest)}
+              {formatDualPrice(product.price as any, product.currency, product.priceOnRequest, usdToUzsRate).primary}
             </div>
+            {formatDualPrice(product.price as any, product.currency, product.priceOnRequest, usdToUzsRate).secondary && (
+              <div className="font-mono-tabular text-sm text-steel mb-1">
+                {formatDualPrice(product.price as any, product.currency, product.priceOnRequest, usdToUzsRate).secondary}
+                {rateDate && <span className="text-[11px] text-steel/70"> · курс ЦБ на {rateDate}</span>}
+              </div>
+            )}
             {product.priceLabel && (
               <div className="inline-block text-[11px] font-bold uppercase tracking-wide text-amber-dark bg-amber/10 px-2 py-1 rounded-sm mb-4">
                 {product.priceLabel}
