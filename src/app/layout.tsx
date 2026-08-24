@@ -3,6 +3,9 @@ import { Archivo, Inter, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { getSiteSettings } from "@/lib/settings";
+
+export const dynamic = "force-dynamic";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -21,19 +24,32 @@ const plexMono = IBM_Plex_Mono({
   variable: "--font-plex-mono",
 });
 
-export const metadata: Metadata = {
-  title: "Актив.Каталог — Имущество и оборудование по специальным ценам",
-  description:
-    "Оборудование, материалы, запчасти и другие активы в наличии. Оставьте заявку — мы свяжемся с вами.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSiteSettings();
+  const title = settings.metaTitle || `${settings.siteName} — Имущество и оборудование по специальным ценам`;
+  const description =
+    settings.metaDescription ||
+    "Оборудование, материалы, запчасти и другие активы в наличии. Оставьте заявку — мы свяжемся с вами.";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return {
+    title,
+    description,
+    icons: settings.faviconUrl ? { icon: settings.faviconUrl } : undefined,
+    openGraph: {
+      title,
+      description,
+      images: settings.ogImageUrl ? [settings.ogImageUrl] : undefined,
+    },
+  };
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSiteSettings();
+
   return (
     <html lang="ru">
-      <body
-        className={`${archivo.variable} ${inter.variable} ${plexMono.variable} font-body antialiased`}
-      >
-        <Header />
+      <body className={`${archivo.variable} ${inter.variable} ${plexMono.variable} font-body antialiased`}>
+        <Header siteName={settings.siteName} />
         <main className="min-h-screen">{children}</main>
         <Footer />
       </body>
