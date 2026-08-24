@@ -52,14 +52,13 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
     }
 
     // Проверим, настроен ли NDA вообще — если нет, сразу открываем форму
-    const ndaCheck = await fetch("/api/nda/current").then((r) => r.json());
-    if (!ndaCheck.active) {
+    const ndaCheck = await fetch(`/api/nda/requirement?productId=${productId}`).then((r) => r.json());
+    if (!ndaCheck.required) {
       setStage("form");
       return;
     }
 
     setStage("nda");
-  }
 
   function handleNdaSigned(acceptanceId: string, telegramId: string, telegramUsername?: string | null) {
     setNdaData({ acceptanceId, telegramId, telegramUsername, ndaVersion: "" });
