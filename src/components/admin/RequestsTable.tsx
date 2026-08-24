@@ -17,6 +17,7 @@ interface RequestRow {
   product: { title: string; slug: string } | null;
   interestedCategory: string | null;
   assigneeName: string | null;
+  desiredPrice: string | null;
   slaState: "ok" | "warning" | "breached" | "none";
   slaRemainingMs: number | null;
 }
@@ -96,6 +97,7 @@ export default function RequestsTable({
               <th className="px-4 py-3 font-medium">Клиент</th>
               <th className="px-4 py-3 font-medium">Товар / категория</th>
               <th className="px-4 py-3 font-medium">Ответственный</th>
+              <th className="px-4 py-3 font-medium">Предложено</th>
               <th className="px-4 py-3 font-medium">Статус</th>
               <th className="px-4 py-3 font-medium">SLA</th>
             </tr>
@@ -115,6 +117,7 @@ export default function RequestsTable({
                 </td>
                 <td className="px-4 py-3 text-steel">{r.product?.title ?? r.interestedCategory ?? "—"}</td>
                 <td className="px-4 py-3 text-steel text-xs">{r.assigneeName ?? "Не назначен"}</td>
+                <td className="px-4 py-3 text-graphite text-xs font-mono-tabular">{r.desiredPrice || "—"}</td>
                 <td className="px-4 py-3">
                   <span className="text-[11px] bg-concrete px-2 py-1 rounded-sm">{REQUEST_STATUS_LABELS[r.status]}</span>
                 </td>
