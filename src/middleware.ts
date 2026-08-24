@@ -15,6 +15,7 @@ const FULL_ONLY_PREFIXES = [
   "/admin/settings", "/api/admin/settings",
   "/admin/nda", "/api/admin/nda-documents",
   "/admin/sla", "/api/admin/sla-rules",
+  "/api/admin/exchange-rate",
 ];
 
 export async function middleware(req: NextRequest) {
