@@ -18,6 +18,10 @@ export async function getSiteSettings() {
       ndaBotToken: null,
       ndaBotUsername: null,
       ndaWebhookSecret: null,
+      faviconUrl: null,
+      metaTitle: null,
+      metaDescription: null,
+      ogImageUrl: null,
     }
   );
 }
@@ -30,10 +34,13 @@ export async function upsertSiteSettings(data: {
   contactWhatsapp?: string | null;
   telegramBotToken?: string | null;
   telegramManagerChatId?: string | null;
-  telegramBotUsername?: string | null;
-  ndaBotToken?: string | null; 
+  ndaBotToken?: string | null;
   ndaBotUsername?: string | null;
   ndaWebhookSecret?: string | null;
+  faviconUrl?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  ogImageUrl?: string | null;
 }) {
   return prisma.siteSettings.upsert({
     where: { id: SETTINGS_ID },
