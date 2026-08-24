@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { getEffectiveUsdRate } from "@/lib/exchangeRate";
 import ProductCard from "@/components/ProductCard";
 import QuickRequestForm from "@/components/QuickRequestForm";
 import HeroSearchBar from "@/components/HeroSearchBar";
@@ -51,7 +52,7 @@ const STEPS = [
 ];
 
 export default async function HomePage() {
-const [categories, newest] = await Promise.all([
+const [categories, newest, { rate: usdToUzsRate }] = await Promise.all([
 prisma.category.findMany({
   where: { parentId: null },
   orderBy: { sortOrder: "asc" },
@@ -68,6 +69,7 @@ prisma.category.findMany({
       take: 4,
       include: { images: true, category: true },
     }),
+  getEffectiveUsdRate(),
   ]);
 
   return (
@@ -152,7 +154,7 @@ prisma.category.findMany({
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {newest.map((p) => (
               // @ts-expect-error Decimal -> number сериализация из Prisma
-              <ProductCard key={p.id} product={p} />
+              <ProductCard key={p.id} product={p} usdToUzsRate={usdToUzsRate} />
             ))}
           </div>
         </section>
