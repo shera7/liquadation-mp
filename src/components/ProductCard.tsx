@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { formatPrice, formatOldPrice, STATUS_LABELS, CONDITION_LABELS } from "@/lib/utils";
+import { formatPrice, formatDualPrice, CONDITION_LABELS } from "@/lib/utils";
 import StatusBadge from "./StatusBadge";
 
 interface ProductCardProps {
@@ -18,11 +18,13 @@ interface ProductCardProps {
     images: { url: string }[];
     category: { name: string; slug: string };
   };
+  usdToUzsRate?: number | null;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, usdToUzsRate = null }: ProductCardProps) {
   const image = product.images[0]?.url;
   const photoCount = product.images.length;
+  const dualPrice = formatDualPrice(product.price, product.currency, product.priceOnRequest, usdToUzsRate);
 
   return (
     <Link
@@ -40,9 +42,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-steel text-sm">
-            Нет фото
-          </div>
+          <div className="w-full h-full flex items-center justify-center text-steel text-sm">Нет фото</div>
         )}
 
         <div className="absolute top-2 left-2">
@@ -63,42 +63,21 @@ export default function ProductCard({ product }: ProductCardProps) {
 
       <div className="p-4">
         <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[11px] uppercase tracking-wide text-steel">
-            {product.category.name}
-          </span>
-          <span className="font-mono text-[11px] text-steel">
-            №{product.inventoryNumber}
-          </span>
+          <span className="text-[11px] uppercase tracking-wide text-steel">{product.category.name}</span>
+          <span className="font-mono text-[11px] text-steel">№{product.inventoryNumber}</span>
         </div>
 
-        <h3 className="font-display font-700 text-graphite leading-snug mb-2 line-clamp-2">
-          {product.title}
-        </h3>
+        <h3 className="font-display font-700 text-graphite leading-snug mb-2 line-clamp-2">{product.title}</h3>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-baseline gap-2">
-            {(product as any).oldPrice && (
-              <span className="text-xs text-steel line-through">
-                {formatOldPrice((product as any).oldPrice, product.currency)}
-              </span>
-            )}
-            <span className="font-mono-tabular font-semibold text-lg text-graphite">
-              {formatPrice(product.price, product.currency, product.priceOnRequest)}
-            </span>
+          <div>
+            <div className="font-mono-tabular font-semibold text-lg text-graphite">{dualPrice.primary}</div>
+            {dualPrice.secondary && <div className="font-mono-tabular text-xs text-steel">{dualPrice.secondary}</div>}
           </div>
-          <span className="text-xs text-steel">
-            {CONDITION_LABELS[product.condition]}
-          </span>
+          <span className="text-xs text-steel">{CONDITION_LABELS[product.condition]}</span>
         </div>
-        {(product as any).priceLabel && (
-          <div className="mt-1.5 inline-block text-[10px] font-bold uppercase tracking-wide text-amber-dark bg-amber/10 px-2 py-0.5 rounded-sm">
-            {(product as any).priceLabel}
-          </div>
-        )}
 
-        {product.location && (
-          <div className="mt-2 text-xs text-steel">{product.location}</div>
-        )}
+        {product.location && <div className="mt-2 text-xs text-steel">{product.location}</div>}
       </div>
     </Link>
   );
