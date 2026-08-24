@@ -121,11 +121,13 @@ export default function RequestDetail({ request, admins, slaState, slaRemainingM
                 <>
                   <dt className="text-steel">Товар</dt>
                   <dd>
-                                      {" · "}
+
+                    <a href={`/product/${request.product.slug}`} target="_blank" className="text-amber-dark hover:underline">{request.product.title}</a>
+                                                        {" · "}
                   <Link href={`/admin/requests/by-product?q=${request.productId}`} className="text-amber-dark hover:underline">
                     Все заявки по этому товару
                   </Link>
-                    <a href={`/product/${request.product.slug}`} target="_blank" className="text-amber-dark hover:underline">{request.product.title}</a></dd>
+                  </dd>
                 </>
               )}
               {request.interestedCategory && (<><dt className="text-steel">Категория интереса</dt><dd className="text-graphite">{request.interestedCategory}</dd></>)}
