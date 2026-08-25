@@ -1,4 +1,5 @@
 import { getSiteSettings } from "./settings";
+import { prisma } from "./prisma";
 
 interface RequestNotificationPayload {
   requestId: string;
@@ -35,12 +36,24 @@ function escapeHtml(text: string) {
 export async function notifyManagerNewRequest(payload: RequestNotificationPayload) {
   const settings = await getSiteSettings();
   const token = settings.telegramBotToken;
-  const chatId = settings.telegramManagerChatId;
 
-  if (!token || !chatId) {
-    console.warn(
-      "[telegram] Токен бота или Chat ID не заданы — настройте их в Админка → Настройки"
-    );
+  if (!token) {
+    console.warn("[telegram] Токен бота не задан — настройте его в Админка → Настройки");
+    return;
+  }
+
+  const recipients = await prisma.telegramRecipient.findMany({ where: { active: true } });
+
+  // Обратная совместимость: если список получателей ещё пуст, используем старое одиночное поле
+  const chatIds =
+    recipients.length > 0
+      ? recipients.map((r) => r.chatId)
+      : settings.telegramManagerChatId
+        ? [settings.telegramManagerChatId]
+        : [];
+
+  if (chatIds.length === 0) {
+    console.warn("[telegram] Нет ни одного получателя уведомлений — добавьте хотя бы одного в Админка → Настройки");
     return;
   }
 
@@ -51,8 +64,7 @@ export async function notifyManagerNewRequest(payload: RequestNotificationPayloa
     if (payload.price) lines.push(`<b>Цена:</b> ${escapeHtml(payload.price)}`);
   } else {
     lines.push(`<b>Тип:</b> Общая заявка`);
-    if (payload.interestedCategory)
-      lines.push(`<b>Категория интереса:</b> ${escapeHtml(payload.interestedCategory)}`);
+    if (payload.interestedCategory) lines.push(`<b>Категория интереса:</b> ${escapeHtml(payload.interestedCategory)}`);
     if (payload.budget) lines.push(`<b>Бюджет:</b> ${escapeHtml(payload.budget)}`);
   }
 
@@ -66,16 +78,13 @@ export async function notifyManagerNewRequest(payload: RequestNotificationPayloa
   if (payload.quantity) lines.push(`<b>Количество:</b> ${payload.quantity}`);
   if (payload.desiredPrice) lines.push(`<b>Желаемая цена:</b> ${escapeHtml(payload.desiredPrice)}`);
   if (payload.contactMethod) {
-    lines.push(
-      `<b>Способ связи:</b> ${CONTACT_METHOD_LABELS[payload.contactMethod] ?? payload.contactMethod}`
-    );
+    lines.push(`<b>Способ связи:</b> ${CONTACT_METHOD_LABELS[payload.contactMethod] ?? payload.contactMethod}`);
   }
   if (payload.comment) lines.push(`<b>Комментарий:</b> ${escapeHtml(payload.comment)}`);
 
   const linkLines: string[] = [];
   if (payload.productUrl) linkLines.push(`<a href="${payload.productUrl}">Открыть товар</a>`);
   if (payload.adminUrl) linkLines.push(`<a href="${payload.adminUrl}">Открыть в CRM</a>`);
-
   if (linkLines.length > 0) {
     lines.push("");
     lines.push(linkLines.join("  ·  "));
@@ -83,19 +92,17 @@ export async function notifyManagerNewRequest(payload: RequestNotificationPayloa
 
   const text = lines.join("\n");
 
-  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text,
-      parse_mode: "HTML",
-      disable_web_page_preview: true,
-    }),
-  });
-
-  if (!res.ok) {
-    const body = await res.text();
-    console.error("[telegram] Ошибка отправки уведомления:", body);
-  }
+  await Promise.all(
+    chatIds.map(async (chatId) => {
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true }),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        console.error(`[telegram] Ошибка отправки на ${chatId}:`, body);
+      }
+    })
+  );
 }
