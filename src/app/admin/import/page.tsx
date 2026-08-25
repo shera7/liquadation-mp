@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 interface ImportResult {
   total: number;
@@ -30,26 +31,38 @@ export default function ImportPage() {
     e.target.value = "";
   }
 
+  function downloadErrorsCsv() {
+    if (!result) return;
+    const header = "Строка,Ошибка\n";
+    const rows = result.errors.map((e) => `${e.row},"${e.message.replace(/"/g, '""')}"`).join("\n");
+    const blob = new Blob(["\uFEFF" + header + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "import-errors.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="max-w-3xl">
-      <h1 className="font-display font-800 text-2xl text-graphite mb-2">Импорт из Excel/CSV</h1>
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="font-display font-800 text-2xl text-graphite">Импорт из Excel/CSV</h1>
+        <a href="/api/admin/import/template" className="text-xs border border-line rounded-sm px-3 py-1.5 hover:border-amber text-steel">
+          Скачать шаблон
+        </a>
+      </div>
       <p className="text-steel text-sm mb-6">
-        Загрузите файл .xlsx или .csv с колонками:{" "}
-        <code className="font-mono text-xs bg-concrete px-1.5 py-0.5 rounded-sm">
-          ID, Название, Категория, Подкатегория, Производитель, Модель, Год, Состояние,
-          Количество, Цена, Валюта, Местонахождение, Описание, Статус
-        </code>
-        . Товары с существующим ID будут обновлены, остальные — созданы.
+        Загрузите файл .xlsx или .csv по образцу шаблона. Товары с существующим ID будут обновлены, остальные — созданы.
+        Фото к товарам после импорта загружаются{" "}
+        <Link href="/admin/import/photos" className="text-amber-dark hover:underline">
+          отдельным шагом здесь
+        </Link>
+        .
       </p>
 
       <label className="block border-2 border-dashed border-line rounded-sm bg-white p-10 text-center cursor-pointer hover:border-amber transition-colors">
-        <input
-          type="file"
-          accept=".xlsx,.xls,.csv"
-          onChange={handleFile}
-          className="hidden"
-          disabled={loading}
-        />
+        <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFile} className="hidden" disabled={loading} />
         <div className="font-display font-700 text-graphite mb-1">
           {loading ? "Загрузка и обработка..." : "Выберите файл или перетащите сюда"}
         </div>
@@ -66,7 +79,12 @@ export default function ImportPage() {
 
           {result.errors.length > 0 && (
             <div className="bg-white border border-alert/30 rounded-sm p-4">
-              <div className="text-sm font-semibold text-alert mb-2">Строки с ошибками</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-sm font-semibold text-alert">Строки с ошибками</div>
+                <button onClick={downloadErrorsCsv} className="text-xs text-amber-dark hover:underline">
+                  Скачать список ошибок (CSV)
+                </button>
+              </div>
               <ul className="text-sm space-y-1 max-h-64 overflow-y-auto">
                 {result.errors.map((e, i) => (
                   <li key={i} className="text-steel">
@@ -76,21 +94,23 @@ export default function ImportPage() {
               </ul>
             </div>
           )}
+
+          {result.successCount > 0 && (
+            <div className="bg-white border border-line rounded-sm p-4 text-sm text-steel">
+              Товары загружены без фото. Чтобы добавить фотографии, перейдите на{" "}
+              <Link href="/admin/import/photos" className="text-amber-dark hover:underline">
+                страницу массовой загрузки фото
+              </Link>{" "}
+              и назовите файлы по инвентарным номерам товаров.
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function Stat({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number;
-  tone?: "ok" | "error";
-}) {
+function Stat({ label, value, tone }: { label: string; value: number; tone?: "ok" | "error" }) {
   const color = tone === "ok" ? "text-okgreen" : tone === "error" ? "text-alert" : "text-graphite";
   return (
     <div className="bg-white border border-line rounded-sm p-4 text-center">
