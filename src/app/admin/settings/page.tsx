@@ -12,8 +12,7 @@ export default async function AdminSettingsPage() {
   if (session?.role !== "FULL") redirect("/admin");
 
   const settings = await getSiteSettings();
-  const recipients = await prisma.telegramRecipient.findMany({ orderBy: { createdAt: "asc" } });
-  
+
   return (
     <div className="max-w-xl">
       <h1 className="font-display font-800 text-2xl text-graphite mb-6">Настройки сайта</h1>
