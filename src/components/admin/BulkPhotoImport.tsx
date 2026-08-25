@@ -29,7 +29,9 @@ export default function BulkPhotoImport() {
 
     const lookupRes = await fetch("/api/admin/products/lookup");
     const products: { id: string; inventoryNumber: string }[] = await lookupRes.json();
-    const map = new Map(products.map((p) => [p.inventoryNumber, p.id]));
+const map = new Map(
+  products.map((p) => [String(p.inventoryNumber).trim(), p.id])
+);
 
     const rows: ResultRow[] = [];
 
