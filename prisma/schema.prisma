@@ -306,3 +306,11 @@ model RequestComment {
 
   @@index([requestId])
 }
+
+model TelegramRecipient {
+  id        String   @id @default(cuid())
+  chatId    String
+  label     String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
