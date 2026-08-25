@@ -3,13 +3,6 @@ import { prisma } from "@/lib/prisma";
 import * as XLSX from "xlsx";
 import slugify from "slugify";
 
-// Ожидаемые колонки Excel/CSV (см. раздел 10 ТЗ):
-// ID | Название | Категория | Подкатегория | Производитель | Модель | Год |
-// Состояние | Количество | Цена | Валюта | Местонахождение | Описание | Статус
-//
-// На Фазе 2 сюда добавляется экран визуального сопоставления колонок (раздел 30 ТЗ).
-// На Фазе 1 колонки должны называться точно как в шаблоне ниже.
-
 const STATUS_MAP: Record<string, string> = {
   "в продаже": "IN_STOCK",
   "забронировано": "RESERVED",
@@ -28,6 +21,18 @@ interface ImportError {
   message: string;
 }
 
+function parseSpecs(raw: string): Record<string, string> | undefined {
+  if (!raw || !raw.trim()) return undefined;
+  const result: Record<string, string> = {};
+  raw.split(";").forEach((pair) => {
+    const [key, ...rest] = pair.split(":");
+    if (key && rest.length > 0) {
+      result[key.trim()] = rest.join(":").trim();
+    }
+  });
+  return Object.keys(result).length > 0 ? result : undefined;
+}
+
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
   const file = formData.get("file") as File | null;
@@ -44,8 +49,7 @@ export async function POST(req: NextRequest) {
   const errors: ImportError[] = [];
   let successCount = 0;
 
-  // Категории кешируем по имени, чтобы не создавать дубликаты и не бить БД в цикле
-  const categoryCache = new Map<string, string>(); // имя категории -> id
+  const categoryCache = new Map<string, string>();
   const existingCategories = await prisma.category.findMany();
   existingCategories.forEach((c) => categoryCache.set(c.name.toLowerCase(), c.id));
 
@@ -79,7 +83,7 @@ export async function POST(req: NextRequest) {
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
-    const rowNum = i + 2; // +1 заголовок, +1 индексация с 1
+    const rowNum = i + 2;
 
     try {
       const title = String(row["Название"] || "").trim();
@@ -98,10 +102,17 @@ export async function POST(req: NextRequest) {
         throw new Error(`Некорректная цена: "${priceRaw}"`);
       }
 
+      const oldPriceRaw = row["Старая цена"];
+      const oldPrice = oldPriceRaw === "" || oldPriceRaw === undefined ? undefined : Number(oldPriceRaw);
+      if (oldPriceRaw !== "" && oldPriceRaw !== undefined && Number.isNaN(oldPrice)) {
+        throw new Error(`Некорректная старая цена: "${oldPriceRaw}"`);
+      }
+
       const statusKey = String(row["Статус"] || "").trim().toLowerCase();
       const conditionKey = String(row["Состояние"] || "").trim().toLowerCase();
 
       const slug = `${slugify(title, { lower: true, strict: true })}-${inventoryNumber}`;
+      const specs = parseSpecs(String(row["Характеристики"] || ""));
 
       await prisma.product.upsert({
         where: { inventoryNumber },
@@ -113,9 +124,13 @@ export async function POST(req: NextRequest) {
           manufacturer: String(row["Производитель"] || "") || undefined,
           model: String(row["Модель"] || "") || undefined,
           year: row["Год"] ? Number(row["Год"]) : undefined,
+          power: String(row["Мощность"] || "") || undefined,
+          specs,
           condition: (CONDITION_MAP[conditionKey] as any) || "USED",
           quantity: row["Количество"] ? Number(row["Количество"]) : 1,
           price: price ?? undefined,
+          oldPrice: oldPrice ?? undefined,
+          priceLabel: String(row["Метка цены"] || "") || undefined,
           priceOnRequest: price === null,
           currency: (String(row["Валюта"] || "USD").toUpperCase() as any) || "USD",
           location: String(row["Местонахождение"] || "") || undefined,
@@ -128,9 +143,13 @@ export async function POST(req: NextRequest) {
           manufacturer: String(row["Производитель"] || "") || undefined,
           model: String(row["Модель"] || "") || undefined,
           year: row["Год"] ? Number(row["Год"]) : undefined,
+          power: String(row["Мощность"] || "") || undefined,
+          specs,
           condition: (CONDITION_MAP[conditionKey] as any) || undefined,
           quantity: row["Количество"] ? Number(row["Количество"]) : undefined,
           price: price ?? undefined,
+          oldPrice: oldPrice ?? undefined,
+          priceLabel: String(row["Метка цены"] || "") || undefined,
           priceOnRequest: price === null,
           currency: (String(row["Валюта"] || "").toUpperCase() as any) || undefined,
           location: String(row["Местонахождение"] || "") || undefined,
@@ -145,10 +164,5 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({
-    total: rows.length,
-    successCount,
-    errorCount: errors.length,
-    errors,
-  });
+  return NextResponse.json({ total: rows.length, successCount, errorCount: errors.length, errors });
 }
