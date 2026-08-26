@@ -28,6 +28,7 @@ interface SettingsFormProps {
     metaTitle: string | null;
     metaDescription: string | null;
     ogImageUrl: string | null;
+    managerWebhookSecret: string | null;
   };
 }
 
@@ -161,6 +162,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       ogImageUrl,
       currencyRateSource: rateSource,
       ...(rateSource === "manual" ? { usdToUzsRate: Number(manualRate) || null } : {}),
+      managerWebhookSecret: form.get("managerWebhookSecret") || null,
     };
 
     const res = await fetch("/api/admin/settings", {
@@ -280,6 +282,9 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
         <h2 className="font-display font-700 text-graphite">Telegram-уведомления о заявках</h2>
         <Field label="Токен бота">
           <input name="telegramBotToken" defaultValue={settings.telegramBotToken ?? ""} placeholder="123456:AA..." className="input" />
+        </Field>
+        <Field label="Секрет вебхука бота-уведомителя (для привязки Telegram сотрудников)">
+          <input name="managerWebhookSecret" defaultValue={settings.managerWebhookSecret ?? ""} className="input" />
         </Field>
 
         <details className="text-xs text-steel">
