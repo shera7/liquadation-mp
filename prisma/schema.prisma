@@ -188,6 +188,9 @@ model Admin {
   passwordHash String
   role         AdminRole @default(MODERATOR)
   createdAt    DateTime  @default(now())
+  telegramChatId             String?
+  telegramLinkToken          String?   @unique
+  telegramLinkTokenExpiresAt DateTime?
 }
 
 model SiteSettings {
@@ -213,6 +216,7 @@ model SiteSettings {
   usdToUzsUpdatedAt  DateTime?
   currencyRateSource String    @default("auto")
   ndaMinPriceUsd Decimal? @db.Decimal(14, 2)
+  managerWebhookSecret String?
 }
 
 enum NdaDocumentStatus {
