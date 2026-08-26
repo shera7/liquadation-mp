@@ -29,37 +29,42 @@ export default function BulkPhotoImport() {
 
     const lookupRes = await fetch("/api/admin/products/lookup");
     const products: { id: string; inventoryNumber: string }[] = await lookupRes.json();
-const map = new Map(
-  products.map((p) => [String(p.inventoryNumber).trim(), p.id])
-);
+    const map = new Map(products.map((p) => [p.inventoryNumber, p.id]));
 
-    const rows: ResultRow[] = [];
+    const fileList = Array.from(files);
+    const rows: ResultRow[] = new Array(fileList.length);
+    const CONCURRENCY = 5;
+    let cursor = 0;
 
-    for (const file of Array.from(files)) {
-      const inventoryNumber = extractInventoryNumber(file.name);
-      const productId = map.get(inventoryNumber);
+    async function worker() {
+      while (cursor < fileList.length) {
+        const index = cursor++;
+        const file = fileList[index];
+        const inventoryNumber = extractInventoryNumber(file.name);
+        const productId = map.get(inventoryNumber);
 
-      if (!productId) {
-        rows.push({ fileName: file.name, inventoryNumber, status: "error", message: "Товар с таким ID не найден" });
+        if (!productId) {
+          rows[index] = { fileName: file.name, inventoryNumber, status: "error", message: "Товар с таким ID не найден" };
+        } else {
+          try {
+            const url = await uploadProductImage(file);
+            const saveRes = await fetch(`/api/products/${productId}/images`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url }),
+            });
+            if (!saveRes.ok) throw new Error("Не удалось сохранить фото");
+            rows[index] = { fileName: file.name, inventoryNumber, status: "success", message: "Загружено" };
+          } catch (e: any) {
+            rows[index] = { fileName: file.name, inventoryNumber, status: "error", message: e.message || "Ошибка загрузки" };
+          }
+        }
+
         setProgress((p) => ({ ...p, done: p.done + 1 }));
-        continue;
       }
-
-      try {
-        const url = await uploadProductImage(file);
-        const saveRes = await fetch(`/api/products/${productId}/images`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url }),
-        });
-        if (!saveRes.ok) throw new Error("Не удалось сохранить фото");
-        rows.push({ fileName: file.name, inventoryNumber, status: "success", message: "Загружено" });
-      } catch (e: any) {
-        rows.push({ fileName: file.name, inventoryNumber, status: "error", message: e.message || "Ошибка загрузки" });
-      }
-
-      setProgress((p) => ({ ...p, done: p.done + 1 }));
     }
+
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, fileList.length) }, () => worker()));
 
     setResults(rows);
     setUploading(false);
