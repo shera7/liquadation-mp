@@ -66,6 +66,9 @@ export default function LoginPage() {
           {loading ? "Вход..." : "Войти"}
         </button>
       </form>
+        <a href="/forgot-password" className="block text-xs text-steel hover:text-graphite text-center mt-3">
+          Забыли пароль?
+        </a>
     </div>
   );
 }
