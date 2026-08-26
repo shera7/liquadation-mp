@@ -18,6 +18,7 @@ export async function getSiteSettings() {
       ndaBotToken: null,
       ndaBotUsername: null,
       ndaWebhookSecret: null,
+      managerWebhookSecret: null,
       faviconUrl: null,
       metaTitle: null,
       metaDescription: null,
