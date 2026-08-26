@@ -42,6 +42,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <Link href="/admin" className="block px-3 py-2 rounded-sm text-sm hover:bg-white/10 hover:text-white transition-colors">
             Дашборд
           </Link>
+          <Link href="/admin/profile" className="block px-3 py-2 rounded-sm text-sm hover:bg-white/10 hover:text-white transition-colors">
+            Мой профиль
+          </Link>
 
           <NavSectionLabel>Каталог</NavSectionLabel>
           <div className="border-l border-white/10 ml-3">
