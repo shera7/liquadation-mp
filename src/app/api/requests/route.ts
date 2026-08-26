@@ -7,6 +7,7 @@ import { z } from "zod";
 import { getSiteSettings } from "@/lib/settings";
 import { getEffectiveUsdRate } from "@/lib/exchangeRate";
 import { isNdaRequiredForProduct } from "@/lib/nda";
+import { waitUntil } from "@vercel/functions";
 
 const requestSchema = z.object({
   type: z.enum(["PRODUCT", "GENERAL"]),
@@ -135,45 +136,52 @@ export async function POST(req: NextRequest) {
   const requestNumber = `REQ-${year}-${String(created.seq).padStart(6, "0")}`;
   await prisma.request.update({ where: { id: created.id }, data: { requestNumber } });
   
-  try {
-    let productTitle: string | undefined;
-    let price: string | undefined;
-    let productUrl: string | undefined;
+  // Уведомление в Telegram отправляется в фоне — не задерживаем ответ клиенту.
+  // waitUntil гарантирует, что Vercel не "заморозит" функцию раньше,
+  // чем промис уведомления завершится, даже после отправки ответа.
+  waitUntil(
+    (async () => {
+      try {
+        let productTitle: string | undefined;
+        let price: string | undefined;
+        let productUrl: string | undefined;
 
-    if (data.productId) {
-      const product = await prisma.product.findUnique({ where: { id: data.productId } });
-      if (product) {
-        productTitle = product.title;
-        price = formatPrice(product.price as any, product.currency, product.priceOnRequest);
-        productUrl = `${req.nextUrl.origin}/product/${product.slug}`;
+        if (data.productId) {
+          const product = await prisma.product.findUnique({ where: { id: data.productId } });
+          if (product) {
+            productTitle = product.title;
+            price = formatPrice(product.price as any, product.currency, product.priceOnRequest);
+            productUrl = `${req.nextUrl.origin}/product/${product.slug}`;
+          }
+        }
+
+        const adminUrl = `${req.nextUrl.origin}/admin/requests`;
+
+        await notifyManagerNewRequest({
+          requestId: created.id,
+          type: created.type,
+          productTitle,
+          price,
+          clientName: created.name,
+          company: created.company,
+          phone: created.phone,
+          telegram: created.telegram,
+          whatsapp: created.whatsapp,
+          email: created.email,
+          quantity: created.quantity,
+          desiredPrice: created.desiredPrice,
+          contactMethod: created.contactMethod,
+          interestedCategory: created.interestedCategory,
+          budget: created.budget,
+          comment: created.comment,
+          productUrl,
+          adminUrl,
+        });
+      } catch (e) {
+        console.error("[requests] Ошибка уведомления Telegram:", e);
       }
-    }
-
-    const adminUrl = `${req.nextUrl.origin}/admin/requests`;
-
-    await notifyManagerNewRequest({
-      requestId: created.id,
-      type: created.type,
-      productTitle,
-      price,
-      clientName: created.name,
-      company: created.company,
-      phone: created.phone,
-      telegram: created.telegram,
-      whatsapp: created.whatsapp,
-      email: created.email,
-      quantity: created.quantity,
-      desiredPrice: created.desiredPrice,
-      contactMethod: created.contactMethod,
-      interestedCategory: created.interestedCategory,
-      budget: created.budget,
-      comment: created.comment,
-      productUrl,
-      adminUrl,
-    });
-  } catch (e) {
-    console.error("[requests] Ошибка уведомления Telegram:", e);
-  }
+    })()
+  );
 
   return NextResponse.json({ ok: true, id: created.id }, { status: 201 });
 }
