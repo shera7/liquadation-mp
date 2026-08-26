@@ -26,11 +26,27 @@ function parseSpecs(raw: string): Record<string, string> | undefined {
   const result: Record<string, string> = {};
   raw.split(";").forEach((pair) => {
     const [key, ...rest] = pair.split(":");
-    if (key && rest.length > 0) {
-      result[key.trim()] = rest.join(":").trim();
-    }
+    if (key && rest.length > 0) result[key.trim()] = rest.join(":").trim();
   });
   return Object.keys(result).length > 0 ? result : undefined;
+}
+
+// Ограниченный параллелизм — вместо await в цикле по одной строке за раз,
+// одновременно обрабатываем до `limit` строк. Это устраняет N+1 в стиле
+// "500 файлов → 500 последовательных запросов" из ТЗ по аудиту.
+async function processWithConcurrency<T>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<void>
+) {
+  let cursor = 0;
+  async function worker() {
+    while (cursor < items.length) {
+      const current = cursor++;
+      await fn(items[current], current);
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => worker()));
 }
 
 export async function POST(req: NextRequest) {
@@ -49,6 +65,10 @@ export async function POST(req: NextRequest) {
   const errors: ImportError[] = [];
   let successCount = 0;
 
+  // --- Проход 1: последовательно разрешаем/создаём ТОЛЬКО категории ---
+  // Категорий обычно на порядки меньше, чем строк товаров, поэтому
+  // последовательность здесь не проблема — а параллельно создавать
+  // одноимённые категории было бы гонкой (race condition).
   const categoryCache = new Map<string, string>();
   const existingCategories = await prisma.category.findMany();
   existingCategories.forEach((c) => categoryCache.set(c.name.toLowerCase(), c.id));
@@ -71,36 +91,44 @@ export async function POST(req: NextRequest) {
     }
 
     const created = await prisma.category.create({
-      data: {
-        name: targetName,
-        slug: slugify(targetName, { lower: true, strict: true }),
-        parentId,
-      },
+      data: { name: targetName, slug: slugify(targetName, { lower: true, strict: true }), parentId },
     });
     categoryCache.set(key, created.id);
     return created.id;
   }
 
+  const rowCategoryIds: (string | null)[] = [];
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
+    const categoryName = String(row["Категория"] || "").trim();
+    if (!categoryName) {
+      rowCategoryIds.push(null);
+      continue;
+    }
+    try {
+      const categoryId = await resolveCategoryId(categoryName, String(row["Подкатегория"] || "").trim());
+      rowCategoryIds.push(categoryId);
+    } catch {
+      rowCategoryIds.push(null);
+    }
+  }
+
+  // --- Проход 2: параллельно (до 10 одновременно) создаём/обновляем товары ---
+  await processWithConcurrency(rows, 10, async (row, i) => {
     const rowNum = i + 2;
 
     try {
       const title = String(row["Название"] || "").trim();
       const inventoryNumber = String(row["ID"] || "").trim();
-      const categoryName = String(row["Категория"] || "").trim();
+      const categoryId = rowCategoryIds[i];
 
       if (!title) throw new Error("Не заполнено поле «Название»");
       if (!inventoryNumber) throw new Error("Не заполнено поле «ID» (инвентарный номер)");
-      if (!categoryName) throw new Error("Не заполнено поле «Категория»");
-
-      const categoryId = await resolveCategoryId(categoryName, String(row["Подкатегория"] || "").trim());
+      if (!categoryId) throw new Error("Не удалось определить категорию");
 
       const priceRaw = row["Цена"];
       const price = priceRaw === "" || priceRaw === undefined ? null : Number(priceRaw);
-      if (priceRaw !== "" && Number.isNaN(price)) {
-        throw new Error(`Некорректная цена: "${priceRaw}"`);
-      }
+      if (priceRaw !== "" && Number.isNaN(price)) throw new Error(`Некорректная цена: "${priceRaw}"`);
 
       const oldPriceRaw = row["Старая цена"];
       const oldPrice = oldPriceRaw === "" || oldPriceRaw === undefined ? undefined : Number(oldPriceRaw);
@@ -110,7 +138,6 @@ export async function POST(req: NextRequest) {
 
       const statusKey = String(row["Статус"] || "").trim().toLowerCase();
       const conditionKey = String(row["Состояние"] || "").trim().toLowerCase();
-
       const slug = `${slugify(title, { lower: true, strict: true })}-${inventoryNumber}`;
       const specs = parseSpecs(String(row["Характеристики"] || ""));
 
@@ -162,7 +189,9 @@ export async function POST(req: NextRequest) {
     } catch (e: any) {
       errors.push({ row: rowNum, message: e.message || "Неизвестная ошибка" });
     }
-  }
+  });
+
+  errors.sort((a, b) => a.row - b.row);
 
   return NextResponse.json({ total: rows.length, successCount, errorCount: errors.length, errors });
 }
