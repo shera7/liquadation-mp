@@ -318,3 +318,14 @@ model TelegramRecipient {
   active    Boolean  @default(true)
   createdAt DateTime @default(now())
 }
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  adminId   String
+  tokenHash String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([adminId])
+}
