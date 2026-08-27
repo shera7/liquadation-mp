@@ -43,10 +43,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   }
 
+  const chatId = String(message.chat.id);
+
   await prisma.admin.update({
     where: { id: admin.id },
-    data: { telegramChatId: String(message.chat.id), telegramLinkToken: null, telegramLinkTokenExpiresAt: null },
+    data: { telegramChatId: chatId, telegramLinkToken: null, telegramLinkTokenExpiresAt: null },
   });
+
+  // Автоматически добавляем в список получателей уведомлений о заявках,
+  // если этот chat ID ещё не добавлен туда вручную
+  const existingRecipient = await prisma.telegramRecipient.findFirst({ where: { chatId } });
+  if (!existingRecipient) {
+    await prisma.telegramRecipient.create({
+      data: { chatId, label: `${admin.name} (сотрудник)`, active: true },
+    });
+  }
 
   if (settings.telegramBotToken) {
     await fetch(`https://api.telegram.org/bot${settings.telegramBotToken}/sendMessage`, {
