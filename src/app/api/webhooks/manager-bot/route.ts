@@ -65,7 +65,8 @@ export async function POST(req: NextRequest) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         chat_id: message.chat.id,
-        text: `Telegram успешно привязан к аккаунту «${admin.name}». Теперь сюда будет приходить ссылка для восстановления пароля.`,
+        text: `Telegram успешно привязан к аккаунту «${admin.name}». Теперь сюда будет приходить ссылка для восстановления пароля, 
+        а также уведомления о новых заявках.`,
       }),
     });
   }
