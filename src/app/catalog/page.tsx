@@ -1,15 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import { getEffectiveUsdRate } from "@/lib/exchangeRate";
-import ProductCard from "@/components/ProductCard";
 import Filters from "@/components/Filters";
 import SearchBar from "@/components/SearchBar";
 import SortSelect from "@/components/SortSelect";
-import Link from "next/link";
+import CatalogResults from "@/components/CatalogResults";
+import { getEffectiveUsdRate } from "@/lib/exchangeRate";
 
 export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 48;
 
 interface CatalogPageProps {
   searchParams: {
@@ -20,13 +19,10 @@ interface CatalogPageProps {
     priceMin?: string;
     priceMax?: string;
     sort?: string;
-    page?: string;
   };
 }
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
-  const page = Math.max(1, Number(searchParams.page) || 1);
-
   const where: Prisma.ProductWhereInput = {
     ...(searchParams.q && {
       OR: [
@@ -35,16 +31,9 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
         { inventoryNumber: { contains: searchParams.q, mode: "insensitive" } },
       ],
     }),
-    ...(searchParams.category
-      ? {
-          category: {
-            OR: [
-              { slug: searchParams.category },
-              { parent: { slug: searchParams.category } },
-            ],
-          },
-        }
-      : {}),
+    ...(searchParams.category && {
+      category: { OR: [{ slug: searchParams.category }, { parent: { slug: searchParams.category } }] },
+    }),
     ...(searchParams.status
       ? { status: searchParams.status as any }
       : { status: { not: "WITHDRAWN" } }),
@@ -72,7 +61,6 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     prisma.product.findMany({
       where,
       orderBy,
-      skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
       include: { images: true, category: true },
     }),
@@ -82,10 +70,12 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       orderBy: { sortOrder: "asc" },
       include: { children: { orderBy: { sortOrder: "asc" } } },
     }),
-        getEffectiveUsdRate(),
+    getEffectiveUsdRate(),
   ]);
 
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const queryString = new URLSearchParams(
+    Object.entries(searchParams).filter(([, v]) => v !== undefined) as [string, string][]
+  ).toString();
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
@@ -104,39 +94,12 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
             <SortSelect current={searchParams.sort} />
           </div>
 
-          {products.length === 0 ? (
-            <div className="border border-line rounded-sm bg-white p-12 text-center text-steel">
-              По заданным параметрам ничего не найдено. Попробуйте изменить фильтры.
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
-              {products.map((p) => (
-                // @ts-expect-error Decimal -> number сериализация из Prisma
-                <ProductCard key={p.id} product={p} usdToUzsRate={usdToUzsRate} />
-              ))}
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-8">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
-                <Link
-                  key={n}
-                  href={{
-                    pathname: "/catalog",
-                    query: { ...searchParams, page: n },
-                  }}
-                  className={`w-9 h-9 flex items-center justify-center rounded-sm text-sm ${
-                    n === page
-                      ? "bg-graphite text-white"
-                      : "bg-white border border-line text-steel hover:border-amber"
-                  }`}
-                >
-                  {n}
-                </Link>
-              ))}
-            </div>
-          )}
+          <CatalogResults
+            initialProducts={products as any}
+            total={total}
+            usdToUzsRate={usdToUzsRate}
+            queryString={queryString}
+          />
         </div>
       </div>
     </div>
