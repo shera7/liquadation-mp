@@ -1,21 +1,29 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import ProductsTable from "@/components/admin/ProductsTable";
+import PaginationControls from "@/components/admin/PaginationControls";
 
 export const dynamic = "force-dynamic";
 
 interface AdminProductsPageProps {
-  searchParams: { status?: string };
+  searchParams: { status?: string; page?: string; pageSize?: string };
 }
 
 export default async function AdminProductsPage({ searchParams }: AdminProductsPageProps) {
-  const [products, categories] = await Promise.all([
+  const page = Math.max(1, Number(searchParams.page) || 1);
+  const pageSize = Number(searchParams.pageSize) || 50;
+
+  const where = searchParams.status ? { status: searchParams.status as any } : undefined;
+
+  const [products, total, categories] = await Promise.all([
     prisma.product.findMany({
-      where: searchParams.status ? { status: searchParams.status as any } : undefined,
+      where,
       orderBy: { createdAt: "desc" },
       include: { category: true, images: true },
-      take: 200,
+      skip: (page - 1) * pageSize,
+      take: pageSize,
     }),
+    prisma.product.count({ where }),
     prisma.category.findMany({ orderBy: { name: "asc" } }),
   ]);
 
@@ -32,6 +40,8 @@ export default async function AdminProductsPage({ searchParams }: AdminProductsP
       </div>
 
       <ProductsTable products={products as any} categories={categories} />
+
+      <PaginationControls page={page} pageSize={pageSize} total={total} basePath="/admin/products" />
     </div>
   );
 }
