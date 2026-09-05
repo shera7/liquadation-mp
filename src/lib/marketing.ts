@@ -2,8 +2,12 @@ import { prisma } from "@/lib/prisma";
 
 export type ResolvedBlock =
   | { id: string; type: "HERO_CAROUSEL" | "MINI_BANNER"; title: string | null; slides: SlideDTO[] }
-  | { id: string; type: "NEWEST_PRODUCTS" | "POPULAR_PRODUCTS" | "DISCOUNTED_PRODUCTS"; title: string | null; products: any[] }
-  | { id: string; type: "CATEGORY_CAROUSEL"; title: string | null; categories: any[] }
+  | {
+      id: string;
+      type: "NEWEST_PRODUCTS" | "POPULAR_PRODUCTS" | "DISCOUNTED_PRODUCTS" | "CATEGORY_CAROUSEL";
+      title: string | null;
+      products: any[];
+    }
   | { id: string; type: "TEXT_HTML"; title: string | null; html: string };
 
 interface SlideDTO {
@@ -92,15 +96,33 @@ export async function getResolvedMarketingBlocks(): Promise<ResolvedBlock[]> {
         break;
       }
 
-      case "CATEGORY_CAROUSEL": {
-        const categoryIds: string[] | undefined = settings.categoryIds;
-        const categories = await prisma.category.findMany({
-          where: categoryIds?.length ? { id: { in: categoryIds } } : { parentId: null },
-          orderBy: { sortOrder: "asc" },
-          include: { _count: { select: { products: true } } },
+        case "CATEGORY_CAROUSEL": {
+        // Администратор выбирает одну категорию — блок показывает товары
+        // именно этой категории (и её подкатегорий), в том же виде,
+        // что и «Новые поступления».
+        const categoryId: string | undefined = settings.categoryId;
+        if (!categoryId) continue;
+
+        const category = await prisma.category.findUnique({
+          where: { id: categoryId },
+          include: { children: true },
         });
-        if (categories.length === 0) continue;
-        resolved.push({ id: block.id, type: "CATEGORY_CAROUSEL", title: block.title, categories });
+        if (!category) continue;
+
+        const categoryIds = [category.id, ...category.children.map((c) => c.id)];
+        const products = await prisma.product.findMany({
+          where: { status: { not: "WITHDRAWN" }, categoryId: { in: categoryIds } },
+          orderBy: { createdAt: "desc" },
+          take: limit,
+          include: PRODUCT_INCLUDE,
+        });
+        if (products.length === 0) continue;
+        resolved.push({
+          id: block.id,
+          type: "CATEGORY_CAROUSEL",
+          title: block.title || category.name,
+          products,
+        });
         break;
       }
 
