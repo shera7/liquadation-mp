@@ -1,13 +1,11 @@
 import type { ResolvedBlock } from "@/lib/marketing";
 import { HeroCarousel, MiniBannerRow } from "./BannerCarousel";
 import ProductScrollRow from "./ProductScrollRow";
-import CategoryScrollRow from "./CategoryScrollRow";
 
 const SECTION_TITLES: Partial<Record<ResolvedBlock["type"], string>> = {
   NEWEST_PRODUCTS: "Новые поступления",
   POPULAR_PRODUCTS: "Популярные позиции",
   DISCOUNTED_PRODUCTS: "Специальные цены",
-  CATEGORY_CAROUSEL: "Категории имущества",
 };
 
 export default function MarketingBlockRenderer({
@@ -37,22 +35,13 @@ export default function MarketingBlockRenderer({
     case "NEWEST_PRODUCTS":
     case "POPULAR_PRODUCTS":
     case "DISCOUNTED_PRODUCTS":
-      return (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-          {heading && (
-            <h2 className="font-display font-700 text-2xl text-graphite mb-6">{heading}</h2>
-          )}
-          <ProductScrollRow products={block.products} usdToUzsRate={usdToUzsRate} />
-        </section>
-      );
-
     case "CATEGORY_CAROUSEL":
       return (
         <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
           {heading && (
             <h2 className="font-display font-700 text-2xl text-graphite mb-6">{heading}</h2>
           )}
-          <CategoryScrollRow categories={block.categories} />
+          <ProductScrollRow products={block.products} usdToUzsRate={usdToUzsRate} />
         </section>
       );
 
