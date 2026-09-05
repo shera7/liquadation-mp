@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import MarketingBlockForm from "@/components/admin/MarketingBlockForm";
 import MarketingSlidesManager from "@/components/admin/MarketingSlidesManager";
 
@@ -19,9 +20,12 @@ export default async function EditMarketingBlockPage({ params }: { params: { id:
       ? await prisma.category.findMany({ where: { parentId: null }, orderBy: { sortOrder: "asc" } })
       : [];
 
-  return (
+    return (
     <div className="max-w-2xl space-y-8">
-      <h1 className="font-display font-800 text-2xl text-graphite">Настройка блока</h1>
+      <Link href="/admin/marketing" className="text-sm text-steel hover:text-graphite inline-block">
+        ← Назад к списку блоков
+      </Link>
+      <h1 className="font-display font-800 text-2xl text-graphite -mt-4">Настройка блока</h1>
 
       <MarketingBlockForm block={block as any} categories={categories} />
 
