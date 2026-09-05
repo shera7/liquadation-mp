@@ -338,3 +338,44 @@ model LoginAttempt {
 
   @@index([ip, createdAt])
 }
+
+// ---------- Маркетинг: динамические блоки главной страницы ----------
+enum MarketingBlockType {
+  HERO_CAROUSEL      // Большая карусель-баннер (вверху страницы)
+  MINI_BANNER        // Ряд мини-баннеров
+  NEWEST_PRODUCTS    // Последние добавленные товары (автоматически)
+  CATEGORY_CAROUSEL  // Карусель по категориям
+  POPULAR_PRODUCTS   // Популярные товары — по просмотрам (автоматически)
+  DISCOUNTED_PRODUCTS// Товары со скидкой — у которых указана oldPrice (автоматически)
+  TEXT_HTML          // Произвольный текстовый/промо-блок
+}
+
+model MarketingBlock {
+  id        String             @id @default(cuid())
+  type      MarketingBlockType
+  title     String?            // заголовок блока на сайте, необязательно
+  isActive  Boolean            @default(true)
+  sortOrder Int                @default(0)
+  settings  Json?              // настройки, специфичные для типа блока (limit, categoryIds, html и т.д.)
+  slides    MarketingSlide[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  @@index([isActive, sortOrder])
+}
+
+model MarketingSlide {
+  id             String         @id @default(cuid())
+  blockId        String
+  block          MarketingBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  imageUrl       String
+  title          String?
+  subtitle       String?
+  buttonLabel    String?
+  linkUrl        String?
+  sortOrder      Int            @default(0)
+  isActive       Boolean        @default(true)
+  createdAt      DateTime       @default(now())
+
+  @@index([blockId])
+}
