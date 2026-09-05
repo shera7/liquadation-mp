@@ -67,7 +67,7 @@ export default function ProductCard({ product, usdToUzsRate = null }: ProductCar
           <span className="font-mono text-[11px] text-steel">№{product.inventoryNumber}</span>
         </div>
 
-        <h3 className="font-display font-700 text-graphite leading-snug mb-2 line-clamp-2">{product.title}</h3>
+        <h3 className="font-display font-700 text-graphite leading-snug mb-2 line-clamp-2 min-h-[2.75rem]">{product.title}</h3>
 
         <div className="flex items-center justify-between">
           <div>
