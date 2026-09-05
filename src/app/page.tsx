@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { getEffectiveUsdRate } from "@/lib/exchangeRate";
+import { getResolvedMarketingBlocks } from "@/lib/marketing";
 import ProductCard from "@/components/ProductCard";
 import QuickRequestForm from "@/components/QuickRequestForm";
 import HeroSearchBar from "@/components/HeroSearchBar";
+import MarketingBlockRenderer from "@/components/marketing/MarketingBlockRenderer";
 
 export const dynamic = "force-dynamic";
 
@@ -53,7 +55,7 @@ const STEPS = [
 ];
 
 export default async function HomePage() {
-  const [categories, activeCounts, newest, { rate: usdToUzsRate }] = await Promise.all([
+  const [categories, activeCounts, marketingBlocks, { rate: usdToUzsRate }] = await Promise.all([
     prisma.category.findMany({
       where: { parentId: null },
       orderBy: { sortOrder: "asc" },
@@ -64,12 +66,7 @@ export default async function HomePage() {
       where: { status: { not: "WITHDRAWN" } },
       _count: true,
     }),
-    prisma.product.findMany({
-      where: { status: "IN_STOCK" },
-      orderBy: { createdAt: "desc" },
-      take: 4,
-      include: { images: true, category: true },
-    }),
+    getResolvedMarketingBlocks(),
     getEffectiveUsdRate(),
   ]);
 
@@ -132,41 +129,32 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Категории */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="font-display font-700 text-2xl text-graphite mb-6">Категории имущества</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {categories.map((c) => (
-            <Link
-              key={c.id}
-              href={`/catalog?category=${c.slug}`}
-              className="group bg-white border border-line rounded-sm p-5 hover:border-amber transition-colors"
-            >
-              <div className="text-xs font-mono text-steel mb-2">{categoryActiveCount(c)} позиций</div>
-              <div className="font-display font-700 text-graphite group-hover:text-amber-dark transition-colors">
-                {c.name}
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Новые поступления */}
-      {newest.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="font-display font-700 text-2xl text-graphite">Новые поступления</h2>
-            <Link href="/catalog" className="text-sm text-amber-dark font-medium hover:underline">
-              Весь каталог →
-            </Link>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {newest.map((p) => (
-              // @ts-expect-error Decimal -> number сериализация из Prisma
-              <ProductCard key={p.id} product={p} usdToUzsRate={usdToUzsRate} />
-            ))}
-          </div>
-        </section>
+      {/* Маркетинговые блоки — управляются администратором в разделе «Маркетинг» */}
+      {marketingBlocks.length > 0 ? (
+        marketingBlocks.map((block) => (
+          <MarketingBlockRenderer key={block.id} block={block} usdToUzsRate={usdToUzsRate} />
+        ))
+      ) : (
+        <>
+          {/* Категории — запасной вариант, пока в админке не настроены маркетинговые блоки */}
+          <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
+            <h2 className="font-display font-700 text-2xl text-graphite mb-6">Категории имущества</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {categories.map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/catalog?category=${c.slug}`}
+                  className="group bg-white border border-line rounded-sm p-5 hover:border-amber transition-colors"
+                >
+                  <div className="text-xs font-mono text-steel mb-2">{categoryActiveCount(c)} позиций</div>
+                  <div className="font-display font-700 text-graphite group-hover:text-amber-dark transition-colors">
+                    {c.name}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </>
       )}
 
       {/* Как проходит покупка */}
