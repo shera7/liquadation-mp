@@ -11,7 +11,7 @@ interface Block {
   settings: Record<string, any> | null;
 }
 
-const PRODUCT_LIST_TYPES = ["NEWEST_PRODUCTS", "POPULAR_PRODUCTS", "DISCOUNTED_PRODUCTS"];
+const PRODUCT_LIST_TYPES = ["NEWEST_PRODUCTS", "POPULAR_PRODUCTS", "DISCOUNTED_PRODUCTS", "CATEGORY_CAROUSEL"];
 
 export default function MarketingBlockForm({
   block,
@@ -24,20 +24,16 @@ export default function MarketingBlockForm({
   const [title, setTitle] = useState(block.title ?? "");
   const [isActive, setIsActive] = useState(block.isActive);
   const [limit, setLimit] = useState(block.settings?.limit ?? 8);
-  const [categoryIds, setCategoryIds] = useState<string[]>(block.settings?.categoryIds ?? []);
+  const [categoryId, setCategoryId] = useState<string>(block.settings?.categoryId ?? "");
   const [html, setHtml] = useState(block.settings?.html ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-
-  function toggleCategory(id: string) {
-    setCategoryIds((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]));
-  }
 
   async function handleSave() {
     setSaving(true);
     const settings: Record<string, any> = {};
     if (PRODUCT_LIST_TYPES.includes(block.type)) settings.limit = Number(limit);
-    if (block.type === "CATEGORY_CAROUSEL") settings.categoryIds = categoryIds;
+    if (block.type === "CATEGORY_CAROUSEL") settings.categoryId = categoryId || null;
     if (block.type === "TEXT_HTML") settings.html = html;
 
     await fetch(`/api/admin/marketing-blocks/${block.id}`, {
@@ -62,12 +58,38 @@ export default function MarketingBlockForm({
           placeholder="Например: Специальные предложения"
           className="w-full border border-line rounded-sm px-3 py-2 text-sm"
         />
+        {block.type === "CATEGORY_CAROUSEL" && !title && (
+          <p className="text-[11px] text-steel mt-1">
+            Если оставить пустым — на сайте будет использовано название выбранной категории.
+          </p>
+        )}
       </div>
 
       <label className="flex items-center gap-1.5 text-sm text-steel">
         <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="accent-amber" />
         Блок активен и показывается на сайте
       </label>
+
+      {block.type === "CATEGORY_CAROUSEL" && (
+        <div>
+          <label className="block text-xs font-medium text-steel mb-1">Категория</label>
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="w-full border border-line rounded-sm px-3 py-2 text-sm"
+          >
+            <option value="">Выберите категорию…</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+          <p className="text-[11px] text-steel mt-1">
+            На сайте покажутся товары этой категории (и её подкатегорий) — так же, как в блоке «Новые поступления».
+          </p>
+        </div>
+      )}
 
       {PRODUCT_LIST_TYPES.includes(block.type) && (
         <div>
@@ -80,30 +102,6 @@ export default function MarketingBlockForm({
             onChange={(e) => setLimit(e.target.value)}
             className="w-24 border border-line rounded-sm px-3 py-2 text-sm"
           />
-        </div>
-      )}
-
-      {block.type === "CATEGORY_CAROUSEL" && (
-        <div>
-          <label className="block text-xs font-medium text-steel mb-2">
-            Категории (если ни одна не выбрана — показываются все)
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => toggleCategory(c.id)}
-                className={`text-xs px-3 py-1.5 rounded-full border ${
-                  categoryIds.includes(c.id)
-                    ? "bg-amber border-amber text-graphite"
-                    : "border-line text-steel hover:border-amber"
-                }`}
-              >
-                {c.name}
-              </button>
-            ))}
-          </div>
         </div>
       )}
 
@@ -121,13 +119,18 @@ export default function MarketingBlockForm({
 
       {saved && <div className="text-okgreen text-sm">Сохранено</div>}
 
-      <button
-        onClick={handleSave}
-        disabled={saving}
-        className="bg-amber text-graphite font-semibold px-6 py-2.5 rounded-sm hover:bg-amber-dark disabled:opacity-60"
-      >
-        {saving ? "Сохранение..." : "Сохранить"}
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="bg-amber text-graphite font-semibold px-6 py-2.5 rounded-sm hover:bg-amber-dark disabled:opacity-60"
+        >
+          {saving ? "Сохранение..." : "Сохранить"}
+        </button>
+        <a href="/admin/marketing" className="text-sm text-steel hover:text-graphite">
+          ← Назад к списку блоков
+        </a>
+      </div>
     </div>
   );
 }
