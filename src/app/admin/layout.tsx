@@ -11,6 +11,7 @@ const CATALOG_NAV = [
 ];
 
 const FULL_ONLY_NAV = [
+  { href: "/admin/marketing", label: "Маркетинг" },
   { href: "/admin/settings", label: "Настройки" },
   { href: "/admin/nda", label: "NDA" },
   { href: "/admin/sla", label: "SLA" },
