@@ -19,3 +19,11 @@ body {
 .font-mono-tabular {
   font-variant-numeric: tabular-nums;
 }
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
