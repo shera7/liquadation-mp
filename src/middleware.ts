@@ -15,6 +15,7 @@ const FULL_ONLY_PREFIXES = [
   "/admin/settings", "/api/admin/settings",
   "/admin/nda", "/api/admin/nda-documents",
   "/admin/sla", "/api/admin/sla-rules",
+  "/admin/marketing", "/api/admin/marketing-blocks",
   "/api/admin/exchange-rate",
 ];
 
