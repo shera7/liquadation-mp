@@ -4,11 +4,14 @@ import { getEffectiveUsdRate } from "@/lib/exchangeRate";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { formatPrice, formatDualPrice, formatOldPrice, STATUS_LABELS, CONDITION_LABELS } from "@/lib/utils";
+import { buildProductSeo, buildProductJsonLd, buildBreadcrumbJsonLd } from "@/lib/seo";
 import RequestForm from "@/components/RequestForm";
 import ProductGallery from "@/components/ProductGallery";
 import StatusBadge from "@/components/StatusBadge";
 
 export const dynamic = "force-dynamic";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 interface ProductPageProps {
   params: { id: string };
@@ -29,15 +32,24 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const product = await getProduct(params.id);
   if (!product) return {};
 
-  const priceStr = formatPrice(product.price as any, product.currency, product.priceOnRequest);
+  // SEO полностью формируется автоматически из данных товара в БД —
+  // отдельного ручного ввода мета-тегов на карточку не требуется.
+  const seo = buildProductSeo(product as any);
+  const canonicalUrl = `${SITE_URL}/product/${product.slug}`;
+
   return {
-    title: `${product.title} — ${priceStr} | Актив.Каталог`,
-    description: product.description?.slice(0, 160) ?? product.title,
+    title: seo.title,
+    description: seo.description,
+    keywords: seo.keywords,
+    alternates: { canonical: canonicalUrl },
     openGraph: {
-      title: product.title,
-      description: product.description?.slice(0, 160) ?? undefined,
+      title: seo.title,
+      description: seo.description,
+      url: canonicalUrl,
       images: product.images[0] ? [product.images[0].url] : undefined,
+      type: "website",
     },
+    robots: { index: true, follow: true },
   };
 }
 
@@ -55,8 +67,27 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const specs = (product.specs as Record<string, string> | null) ?? {};
   const parentCategory = product.category.parent;
 
+  const productJsonLd = buildProductJsonLd(product as any, SITE_URL);
+  const breadcrumbJsonLd = buildBreadcrumbJsonLd([
+    { name: "Каталог", url: `${SITE_URL}/catalog` },
+    ...(parentCategory
+      ? [{ name: parentCategory.name, url: `${SITE_URL}/catalog?category=${parentCategory.slug}` }]
+      : []),
+    { name: product.category.name, url: `${SITE_URL}/catalog?category=${product.category.slug}` },
+    { name: product.title, url: `${SITE_URL}/product/${product.slug}` },
+  ]);
+
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+      {/* Структурированные данные для индексации Google (Product + хлебные крошки) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       <nav className="text-xs text-steel mb-6 flex items-center gap-1.5 flex-wrap">
         <Link href="/catalog" className="hover:text-amber-dark">
           Каталог
