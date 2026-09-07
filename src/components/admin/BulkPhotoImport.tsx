@@ -20,11 +20,6 @@ export default function BulkPhotoImport() {
     return withoutExt.replace(/-\d+$/, "");
   }
 
-  function extractInventoryNumber(fileName: string): string {
-    const withoutExt = fileName.replace(/\.[^.]+$/, "");
-    return withoutExt.replace(/-\d+$/, "");
-  }
-
   // Если ID полностью числовой — сравниваем без ведущих нулей.
   // Это защищает от расхождений вида "0014777" (имя файла) vs "14777"
   // (номер в базе, где нули могли потеряться при импорте из Excel).
