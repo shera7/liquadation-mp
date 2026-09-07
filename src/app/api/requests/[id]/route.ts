@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
 import { verifySessionToken } from "@/lib/auth";
+import { logAdminAction } from "@/lib/auditLog";
 
 interface Params {
   params: { id: string };
@@ -49,6 +50,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
           newStatus: body.status,
           comment: body.historyComment || undefined,
         },
+      });
+      await logAdminAction({
+        action: "request.status_change",
+        entityType: "Request",
+        entityId: request.id,
+        description: `Заявка №${request.id.slice(-6)}: статус изменён с «${existing.status}» на «${body.status}»`,
+        metadata: { previousStatus: existing.status, newStatus: body.status },
       });
     }
 
