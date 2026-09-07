@@ -16,6 +16,7 @@ const FULL_ONLY_NAV = [
   { href: "/admin/nda", label: "NDA" },
   { href: "/admin/sla", label: "SLA" },
   { href: "/admin/employees", label: "Сотрудники" },
+  { href: "/admin/action-log", label: "Журнал действий" },
 ];
 
 function NavSectionLabel({ children }: { children: React.ReactNode }) {
