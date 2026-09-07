@@ -20,6 +20,18 @@ export default function BulkPhotoImport() {
     return withoutExt.replace(/-\d+$/, "");
   }
 
+  function extractInventoryNumber(fileName: string): string {
+    const withoutExt = fileName.replace(/\.[^.]+$/, "");
+    return withoutExt.replace(/-\d+$/, "");
+  }
+
+  // Если ID полностью числовой — сравниваем без ведущих нулей.
+  // Это защищает от расхождений вида "0014777" (имя файла) vs "14777"
+  // (номер в базе, где нули могли потеряться при импорте из Excel).
+  function normalizeId(id: string): string {
+    return /^\d+$/.test(id) ? String(parseInt(id, 10)) : id;
+  }
+
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
 
@@ -30,7 +42,7 @@ export default function BulkPhotoImport() {
     const lookupRes = await fetch("/api/admin/products/lookup");
     const products: { id: string; inventoryNumber: string }[] = await lookupRes.json();
     const map = new Map(products.map((p) => [p.inventoryNumber, p.id]));
-
+    const normalizedMap = new Map(products.map((p) => [normalizeId(p.inventoryNumber), p.id]));
     const fileList = Array.from(files);
     const rows: ResultRow[] = new Array(fileList.length);
     const CONCURRENCY = 5;
@@ -41,7 +53,7 @@ export default function BulkPhotoImport() {
         const index = cursor++;
         const file = fileList[index];
         const inventoryNumber = extractInventoryNumber(file.name);
-        const productId = map.get(inventoryNumber);
+        const productId = map.get(inventoryNumber) ?? normalizedMap.get(normalizeId(inventoryNumber));
 
         if (!productId) {
           rows[index] = { fileName: file.name, inventoryNumber, status: "error", message: "Товар с таким ID не найден" };
