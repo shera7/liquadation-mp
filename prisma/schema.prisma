@@ -379,3 +379,21 @@ model MarketingSlide {
 
   @@index([blockId])
 }
+
+// ---------- Журнал действий администраторов ----------
+model AdminActionLog {
+  id          String   @id @default(cuid())
+  adminId     String
+  adminName   String
+  action      String   // например: product.create, product.update, product.delete,
+                        // settings.update, employee.create, employee.update, employee.delete,
+                        // request.status_change
+  entityType  String   // Product, Request, Settings, Employee, MarketingBlock и т.д.
+  entityId    String?
+  description String   // человекочитаемое краткое описание для списка
+  metadata    Json?     // доп. данные (что именно изменилось)
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}
