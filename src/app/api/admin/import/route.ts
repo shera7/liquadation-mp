@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const workbook = XLSX.read(buffer, { type: "buffer" });
   const sheet = workbook.Sheets[workbook.SheetNames[0]];
-  const rows: Record<string, any>[] = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+  const rows: Record<string, any>[] = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false });
 
   const errors: ImportError[] = [];
   let successCount = 0;
