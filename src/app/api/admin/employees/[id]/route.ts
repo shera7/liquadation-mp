@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
+import { logAdminAction } from "@/lib/auditLog";
 
 interface Params {
   params: { id: string };
@@ -25,6 +26,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       data,
       select: { id: true, name: true, email: true, role: true },
     });
+    await logAdminAction({
+      action: "employee.update",
+      entityType: "Employee",
+      entityId: admin.id,
+      description: `Изменён сотрудник «${admin.name}» (${admin.email})`,
+      metadata: { changedFields: { role: body.role, name: body.name, passwordChanged: Boolean(body.password) } },
+    });
     return NextResponse.json(admin);
   } catch {
     return NextResponse.json({ error: "Не удалось обновить сотрудника" }, { status: 400 });
@@ -46,6 +54,14 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     }
 
     await prisma.admin.delete({ where: { id: params.id } });
+    if (target) {
+      await logAdminAction({
+        action: "employee.delete",
+        entityType: "Employee",
+        entityId: params.id,
+        description: `Удалён сотрудник «${target.name}» (${target.email})`,
+      });
+    }
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ error: "Не удалось удалить сотрудника" }, { status: 400 });
