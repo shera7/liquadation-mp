@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth";
+import { logAdminAction } from "@/lib/auditLog";
 
 export async function GET() {
   const employees = await prisma.admin.findMany({
@@ -26,6 +27,12 @@ export async function POST(req: NextRequest) {
     const admin = await prisma.admin.create({
       data: { name, email, passwordHash, role },
       select: { id: true, name: true, email: true, role: true, createdAt: true },
+    });
+    await logAdminAction({
+      action: "employee.create",
+      entityType: "Employee",
+      entityId: admin.id,
+      description: `Добавлен сотрудник «${admin.name}» (${admin.email}), роль: ${admin.role}`,
     });
     return NextResponse.json(admin, { status: 201 });
   } catch (e: any) {
