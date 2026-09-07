@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import slugify from "slugify";
 import { z } from "zod";
+import { logAdminAction } from "@/lib/auditLog";
 
 const createProductSchema = z.object({
   title: z.string().min(2),
@@ -61,6 +62,12 @@ export async function POST(req: NextRequest) {
           : undefined,
       },
       include: { images: true },
+    });
+    await logAdminAction({
+      action: "product.create",
+      entityType: "Product",
+      entityId: product.id,
+      description: `Добавлен товар «${product.title}» (№${product.inventoryNumber})`,
     });
     return NextResponse.json(product, { status: 201 });
   } catch (e: any) {
