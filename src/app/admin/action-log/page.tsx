@@ -41,7 +41,7 @@ export default async function AdminActionLogPage({
 
       <div className="flex gap-2 mb-4">
         
-          href="/admin/action-log"
+         <a href="/admin/action-log"
           className={`text-xs px-3 py-1.5 rounded-full border ${
             !entityType ? "bg-amber border-amber text-graphite" : "border-line text-steel hover:border-amber"
           }`}
@@ -49,7 +49,7 @@ export default async function AdminActionLogPage({
           Все
         </a>
         {Object.entries(ENTITY_LABELS).map(([value, label]) => (
-          
+          <a
             key={value}
             href={`/admin/action-log?entityType=${value}`}
             className={`text-xs px-3 py-1.5 rounded-full border ${
