@@ -138,6 +138,7 @@ model Request {
 
   name          String
   company       String?
+  companyInn    String?       
   phone         String
   ip            String?
 
@@ -157,8 +158,13 @@ model Request {
   email         String?
 
   quantity      Int?
-  desiredPrice  String?
+  desiredPrice         String?
+  desiredPriceCurrency Currency?     // валюта, в которой клиент указал желаемую/предложенную цену
   contactMethod String?       // предпочитаемый способ связи
+
+  paymentTermId    String?
+  paymentTerm      PaymentTerm? @relation(fields: [paymentTermId], references: [id])
+  paymentTermLabel String?      // снимок названия условия на момент заявки (на случай, если условие потом изменят/удалят)
 
   // поля для GENERAL-заявки
   interestedCategory String?
@@ -396,4 +402,15 @@ model AdminActionLog {
 
   @@index([createdAt])
   @@index([entityType, entityId])
+}
+
+// ---------- Условия оплаты (настраиваются администратором) ----------
+model PaymentTerm {
+  id           String    @id @default(cuid())
+  label        String    // например: "100% предоплата", "Рассрочка на 3 месяца"
+  minAmountUsd Float?    // порог: условие доступно только для товаров дороже этой суммы (в USD); null = без порога
+  isActive     Boolean   @default(true)
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  requests     Request[]
 }
