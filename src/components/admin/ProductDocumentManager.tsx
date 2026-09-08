@@ -29,7 +29,7 @@ export default function ProductDocumentManager({
     setError(null);
 
     try {
-      const url = await uploadProductDocument(file);
+      const url = await uploadProductDocument(file, productId);
 
       const saveRes = await fetch(`/api/products/${productId}/documents`, {
         method: "POST",
