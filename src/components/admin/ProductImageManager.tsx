@@ -31,7 +31,7 @@ export default function ProductImageManager({
 
     for (const file of Array.from(files)) {
       try {
-        const url = await uploadProductImage(file);
+        const url = await uploadProductImage(file, productId);
 
         const saveRes = await fetch(`/api/products/${productId}/images`, {
           method: "POST",
