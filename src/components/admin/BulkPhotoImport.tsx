@@ -54,7 +54,7 @@ export default function BulkPhotoImport() {
           rows[index] = { fileName: file.name, inventoryNumber, status: "error", message: "Товар с таким ID не найден" };
         } else {
           try {
-            const url = await uploadProductImage(file);
+                        const url = await uploadProductImage(file, productId);
             const saveRes = await fetch(`/api/products/${productId}/images`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
