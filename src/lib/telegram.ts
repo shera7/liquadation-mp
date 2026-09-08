@@ -8,12 +8,15 @@ interface RequestNotificationPayload {
   price?: string;
   clientName: string;
   company?: string | null;
+  companyInn?: string | null;
   phone: string;
   telegram?: string | null;
   whatsapp?: string | null;
   email?: string | null;
   quantity?: number | null;
   desiredPrice?: string | null;
+  desiredPriceCurrency?: string | null;
+  paymentTermLabel?: string | null;
   contactMethod?: string | null;
   interestedCategory?: string | null;
   budget?: string | null;
@@ -71,12 +74,16 @@ export async function notifyManagerNewRequest(payload: RequestNotificationPayloa
   lines.push("");
   lines.push(`<b>Клиент:</b> ${escapeHtml(payload.clientName)}`);
   if (payload.company) lines.push(`<b>Компания:</b> ${escapeHtml(payload.company)}`);
+  if (payload.companyInn) lines.push(`<b>ИНН/ПИНФЛ:</b> ${escapeHtml(payload.companyInn)}`);
   lines.push(`<b>Телефон:</b> ${escapeHtml(payload.phone)}`);
   if (payload.telegram) lines.push(`<b>Telegram/WhatsApp:</b> ${escapeHtml(payload.telegram)}`);
   if (payload.whatsapp) lines.push(`<b>WhatsApp:</b> ${escapeHtml(payload.whatsapp)}`);
   if (payload.email) lines.push(`<b>Email:</b> ${escapeHtml(payload.email)}`);
   if (payload.quantity) lines.push(`<b>Количество:</b> ${payload.quantity}`);
-  if (payload.desiredPrice) lines.push(`<b>Желаемая цена:</b> ${escapeHtml(payload.desiredPrice)}`);
+  if (payload.desiredPrice) {
+    lines.push(`<b>Желаемая цена:</b> ${escapeHtml(payload.desiredPrice)} ${payload.desiredPriceCurrency ?? ""}`);
+  }
+  if (payload.paymentTermLabel) lines.push(`<b>Условия оплаты:</b> ${escapeHtml(payload.paymentTermLabel)}`);
   if (payload.contactMethod) {
     lines.push(`<b>Способ связи:</b> ${CONTACT_METHOD_LABELS[payload.contactMethod] ?? payload.contactMethod}`);
   }
