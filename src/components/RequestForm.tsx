@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NdaGate from "./NdaGate";
 
 interface RequestFormProps {
@@ -22,11 +22,25 @@ interface StoredNda {
   ndaVersion: string;
 }
 
+interface PaymentTerm {
+  id: string;
+  label: string;
+}
+
 export default function RequestForm({ productId, productTitle, mode = "request" }: RequestFormProps) {
   const [stage, setStage] = useState<"closed" | "nda" | "form">("closed");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [ndaData, setNdaData] = useState<StoredNda | null>(null);
   const [formLoadedAt] = useState(() => Date.now());
+  const [paymentTerms, setPaymentTerms] = useState<PaymentTerm[]>([]);
+
+  useEffect(() => {
+    if (stage !== "form") return;
+    fetch(`/api/payment-terms?productId=${productId}`)
+      .then((r) => r.json())
+      .then((data) => Array.isArray(data) && setPaymentTerms(data))
+      .catch(() => {});
+  }, [stage, productId]);
 
   async function handleOpen() {
     // NDA нужен только для основной заявки по товару, не для "запросить цену"/"вопрос"
@@ -79,11 +93,14 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
           productId,
           name: form.get("name"),
           company: form.get("company"),
+          companyInn: form.get("companyInn"),
           phone: form.get("phone"),
           telegram: form.get("telegram"),
           email: form.get("email"),
           quantity: form.get("quantity") ? Number(form.get("quantity")) : undefined,
           desiredPrice: form.get("desiredPrice"),
+          desiredPriceCurrency: form.get("desiredPrice") ? form.get("desiredPriceCurrency") : undefined,
+          paymentTermId: form.get("paymentTermId") || undefined,
           contactMethod: form.get("contactMethod"),
           comment: form.get("comment"),
           website: form.get("website"),
@@ -162,7 +179,8 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
       )}
 
       <input name="name" required placeholder="Имя *" className="input" />
-      <input name="company" placeholder="Компания" className="input" />
+      <input name="company" required placeholder="Компания *" className="input" />
+      <input name="companyInn" required placeholder="ИНН / ПИНФЛ *" className="input" />
       <div className="grid grid-cols-2 gap-2">
         <input name="phone" required placeholder="Телефон *" className="input" />
         <input
@@ -175,8 +193,26 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
       <input name="email" type="email" placeholder="Email" className="input" />
       <div className="grid grid-cols-2 gap-2">
         <input name="quantity" type="number" min={1} placeholder="Количество" className="input" />
-        <input name="desiredPrice" placeholder="Желаемая цена" className="input" />
+        <div className="grid grid-cols-[1fr_auto] gap-1">
+          <input name="desiredPrice" placeholder="Желаемая цена" className="input" />
+          <select name="desiredPriceCurrency" defaultValue="USD" className="input">
+            <option value="USD">USD</option>
+            <option value="UZS">UZS</option>
+          </select>
+        </div>
       </div>
+
+      {paymentTerms.length > 0 && (
+        <select name="paymentTermId" className="input">
+          <option value="">Условия оплаты (по желанию)</option>
+          {paymentTerms.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.label}
+            </option>
+          ))}
+        </select>
+      )}
+
       <select name="contactMethod" className="input">
         <option value="">Способ связи</option>
         <option value="phone">Звонок</option>
