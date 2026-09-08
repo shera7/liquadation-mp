@@ -192,12 +192,15 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
       </div>
       <input name="email" type="email" placeholder="Email" className="input" />
       <input name="quantity" type="number" min={1} placeholder="Количество" className="input" />
-      <div className="flex gap-2">
-        <input name="desiredPrice" placeholder="Желаемая цена" className="input flex-1 min-w-0" />
-        <select name="desiredPriceCurrency" defaultValue="USD" className="input w-24 shrink-0">
-          <option value="USD">USD</option>
-          <option value="UZS">UZS</option>
-        </select>
+      <div>
+        <label className="block text-xs text-steel mb-1">Желаемая цена (необязательно)</label>
+        <div className="flex gap-2">
+          <input name="desiredPrice" placeholder="Например, 1200" className="input flex-1 min-w-0" />
+          <select name="desiredPriceCurrency" defaultValue="USD" className="input w-24 shrink-0">
+            <option value="USD">USD</option>
+            <option value="UZS">UZS</option>
+          </select>
+        </div>
       </div>
 
       {paymentTerms.length > 0 && (
