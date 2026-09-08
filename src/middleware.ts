@@ -18,6 +18,7 @@ const FULL_ONLY_PREFIXES = [
   "/admin/marketing", "/api/admin/marketing-blocks",
   "/api/admin/exchange-rate",
   "/admin/action-log",
+  "/admin/payment-terms", "/api/admin/payment-terms",
 ];
 
 export async function middleware(req: NextRequest) {
