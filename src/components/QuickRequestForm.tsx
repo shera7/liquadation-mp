@@ -46,7 +46,6 @@ export default function QuickRequestForm() {
 
   return (
     <form
-      id="quick-request"
       onSubmit={handleSubmit}
       className="bg-white border border-line rounded-sm p-6 space-y-3 scroll-mt-24"
     >
