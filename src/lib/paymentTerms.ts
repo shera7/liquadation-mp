@@ -9,15 +9,19 @@ export async function getActivePaymentTerms() {
 
 /**
  * Возвращает условия оплаты, доступные для товара с данной ценой (в USD).
- * Условие без порога (minAmountUsd = null) доступно всегда.
- * priceUsd = null (цена по запросу / неизвестна) — показываем условия без порога.
+ * Диапазон [minAmountUsd, maxAmountUsd] — обе границы необязательны:
+ * null у min = "от 0", null у max = "без верхнего предела".
+ * priceUsd = null (цена по запросу / неизвестна) — показываем только условия
+ * без каких-либо границ (доступные для любой суммы).
  */
 export async function getEligiblePaymentTerms(priceUsd: number | null) {
   const terms = await getActivePaymentTerms();
   return terms.filter((t) => {
-    if (t.minAmountUsd === null) return true;
+    if (t.minAmountUsd === null && t.maxAmountUsd === null) return true;
     if (priceUsd === null) return false;
-    return priceUsd >= t.minAmountUsd;
+    if (t.minAmountUsd !== null && priceUsd < t.minAmountUsd) return false;
+    if (t.maxAmountUsd !== null && priceUsd > t.maxAmountUsd) return false;
+    return true;
   });
 }
 
