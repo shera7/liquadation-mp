@@ -15,6 +15,7 @@ const FULL_ONLY_NAV = [
   { href: "/admin/settings", label: "Настройки" },
   { href: "/admin/nda", label: "NDA" },
   { href: "/admin/sla", label: "SLA" },
+  { href: "/admin/payment-terms", label: "Условия оплаты" },
   { href: "/admin/employees", label: "Сотрудники" },
   { href: "/admin/action-log", label: "Журнал действий" },
 ];
