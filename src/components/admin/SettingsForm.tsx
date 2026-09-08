@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { uploadProductImage } from "@/lib/uploadImage";
+import { uploadSiteImage } from "@/lib/uploadSiteImage";
 
 interface Recipient {
   id: string;
@@ -105,7 +105,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
     if (!file) return;
     setUploadingFavicon(true);
     try {
-      const url = await uploadProductImage(file);
+      const url = await uploadSiteImage(file);
       setFaviconUrl(url);
     } catch (e: any) {
       setError(e.message || "Не удалось загрузить favicon");
@@ -117,7 +117,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
     if (!file) return;
     setUploadingOg(true);
     try {
-      const url = await uploadProductImage(file);
+      const url = await uploadSiteImage(file);
       setOgImageUrl(url);
     } catch (e: any) {
       setError(e.message || "Не удалось загрузить изображение");
