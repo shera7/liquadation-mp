@@ -408,7 +408,8 @@ model AdminActionLog {
 model PaymentTerm {
   id           String    @id @default(cuid())
   label        String    // например: "100% предоплата", "Рассрочка на 3 месяца"
-  minAmountUsd Float?    // порог: условие доступно только для товаров дороже этой суммы (в USD); null = без порога
+  minAmountUsd Float?    // нижняя граница диапазона (в USD); null = от 0
+  maxAmountUsd Float?    // верхняя граница диапазона (в USD); null = без верхнего предела
   isActive     Boolean   @default(true)
   sortOrder    Int       @default(0)
   createdAt    DateTime  @default(now())
