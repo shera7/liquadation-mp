@@ -89,6 +89,12 @@ export default function RequestDetail({ request, admins, slaState, slaRemainingM
               <dd className="text-graphite">{new Date(request.createdAt).toLocaleString("ru-RU")}</dd>
               <dt className="text-steel">Клиент</dt>
               <dd className="text-graphite">{request.name}{request.company ? ` (${request.company})` : ""}</dd>
+              {request.companyInn && (
+                <>
+                  <dt className="text-steel">ИНН / ПИНФЛ</dt>
+                  <dd className="text-graphite font-mono">{request.companyInn}</dd>
+                </>
+              )}
               <dt className="text-steel">Телефон</dt>
               <dd className="text-graphite font-mono">{request.phone}</dd>
               {request.telegram && (<><dt className="text-steel">Telegram</dt><dd className="text-graphite">{request.telegram}</dd></>)}
@@ -102,7 +108,15 @@ export default function RequestDetail({ request, admins, slaState, slaRemainingM
               {request.desiredPrice && (
                 <>
                   <dt className="text-steel">Предложенная цена</dt>
-                  <dd className="text-graphite font-semibold">{request.desiredPrice}</dd>
+                  <dd className="text-graphite font-semibold">
+                    {request.desiredPrice} {request.desiredPriceCurrency ?? ""}
+                  </dd>
+                </>
+              )}
+              {request.paymentTermLabel && (
+                <>
+                  <dt className="text-steel">Условия оплаты</dt>
+                  <dd className="text-graphite">{request.paymentTermLabel}</dd>
                 </>
               )}
               {request.contactMethod && (
