@@ -18,6 +18,8 @@ interface RequestRow {
   interestedCategory: string | null;
   assigneeName: string | null;
   desiredPrice: string | null;
+  desiredPriceCurrency: string | null;
+  paymentTermLabel: string | null;
   slaState: "ok" | "warning" | "breached" | "none";
   slaRemainingMs: number | null;
 }
@@ -118,7 +120,12 @@ export default function RequestsTable({
                 </td>
                 <td className="px-4 py-3 text-steel">{r.product?.title ?? r.interestedCategory ?? "—"}</td>
                 <td className="px-4 py-3 text-steel text-xs">{r.assigneeName ?? "Не назначен"}</td>
-                <td className="px-4 py-3 text-graphite text-xs font-mono-tabular">{r.desiredPrice || "—"}</td>
+                <td className="px-4 py-3 text-graphite text-xs font-mono-tabular">
+                  {r.desiredPrice ? `${r.desiredPrice} ${r.desiredPriceCurrency ?? ""}` : "—"}
+                  {r.paymentTermLabel && (
+                    <div className="text-[10px] text-steel font-sans mt-0.5">{r.paymentTermLabel}</div>
+                  )}
+                </td>
                 <td className="px-4 py-3">
                   <span className="text-[11px] bg-concrete px-2 py-1 rounded-sm">{REQUEST_STATUS_LABELS[r.status]}</span>
                 </td>
