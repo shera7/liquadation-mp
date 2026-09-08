@@ -13,13 +13,16 @@ const requestSchema = z.object({
   type: z.enum(["PRODUCT", "GENERAL"]),
   productId: z.string().optional(),
   name: z.string().min(1, "Укажите имя"),
-  company: z.string().optional(),
+  company: z.string().min(1, "Укажите название компании").optional(),
+  companyInn: z.string().min(5, "Укажите ИНН или ПИНФЛ").optional(),
   phone: z.string().min(5, "Укажите телефон"),
   telegram: z.string().optional(),
   whatsapp: z.string().optional(),
   email: z.string().email().optional().or(z.literal("")),
   quantity: z.number().int().positive().optional(),
   desiredPrice: z.string().optional(),
+  desiredPriceCurrency: z.enum(["USD", "UZS"]).optional(),
+  paymentTermId: z.string().optional(),
   contactMethod: z.string().optional(),
   interestedCategory: z.string().optional(),
   budget: z.string().optional(),
@@ -39,6 +42,23 @@ export async function POST(req: NextRequest) {
   }
 
   const data = parsed.data;
+
+  // Компания и ИНН/ПИНФЛ обязательны для заявок на конкретный товар
+  // (общая заявка без товара их не требует).
+  if (data.type === "PRODUCT") {
+    if (!data.company || !data.company.trim()) {
+      return NextResponse.json(
+        { error: { fieldErrors: { company: ["Укажите название компании"] } } },
+        { status: 400 }
+      );
+    }
+    if (!data.companyInn || !data.companyInn.trim()) {
+      return NextResponse.json(
+        { error: { fieldErrors: { companyInn: ["Укажите ИНН или ПИНФЛ"] } } },
+        { status: 400 }
+      );
+    }
+  }
 
   if (data.website) {
     return NextResponse.json({ ok: true, id: "ignored" }, { status: 201 });
@@ -111,18 +131,28 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  let paymentTermLabel: string | undefined;
+  if (data.paymentTermId) {
+    const term = await prisma.paymentTerm.findUnique({ where: { id: data.paymentTermId } });
+    paymentTermLabel = term?.label;
+  }
+
   const created = await prisma.request.create({
     data: {
       type: data.type,
       productId: data.productId,
       name: data.name,
       company: data.company,
+      companyInn: data.companyInn,
       phone: data.phone,
       telegram: data.telegram,
       whatsapp: data.whatsapp,
       email: data.email || undefined,
       quantity: data.quantity,
       desiredPrice: data.desiredPrice,
+      desiredPriceCurrency: data.desiredPrice ? data.desiredPriceCurrency ?? "USD" : undefined,
+      paymentTermId: data.paymentTermId || undefined,
+      paymentTermLabel,
       contactMethod: data.contactMethod,
       interestedCategory: data.interestedCategory,
       budget: data.budget,
@@ -164,12 +194,15 @@ export async function POST(req: NextRequest) {
           price,
           clientName: created.name,
           company: created.company,
+          companyInn: created.companyInn,
           phone: created.phone,
           telegram: created.telegram,
           whatsapp: created.whatsapp,
           email: created.email,
           quantity: created.quantity,
           desiredPrice: created.desiredPrice,
+          desiredPriceCurrency: created.desiredPriceCurrency,
+          paymentTermLabel: created.paymentTermLabel,
           contactMethod: created.contactMethod,
           interestedCategory: created.interestedCategory,
           budget: created.budget,
