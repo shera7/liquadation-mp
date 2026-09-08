@@ -185,7 +185,7 @@ export default async function HomePage() {
       </section>
 
       {/* Быстрая заявка */}
-      <section className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16">
+      <section id="quick-request" className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16">
         <h2 className="font-display font-700 text-2xl text-graphite mb-2">
           Не нашли нужную позицию?
         </h2>
