@@ -192,7 +192,7 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
       </div>
       <input name="email" type="email" placeholder="Email" className="input" />
       <input name="quantity" type="number" min={1} placeholder="Количество" className="input" />
-      <div>
+      <div className="grid grid-cols-2 gap-2">
         <label className="block text-xs text-steel mb-1">Желаемая цена (необязательно)</label>
         <div className="flex gap-2">
           <input name="desiredPrice" placeholder="Например, 1200" className="input flex-1 min-w-0" />
