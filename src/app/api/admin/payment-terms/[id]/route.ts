@@ -16,6 +16,18 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     data.minAmountUsd =
       body.minAmountUsd === null || body.minAmountUsd === "" ? null : Number(body.minAmountUsd);
   }
+  if ("maxAmountUsd" in body) {
+    data.maxAmountUsd =
+      body.maxAmountUsd === null || body.maxAmountUsd === "" ? null : Number(body.maxAmountUsd);
+  }
+
+  if (
+    typeof data.minAmountUsd === "number" &&
+    typeof data.maxAmountUsd === "number" &&
+    data.minAmountUsd >= data.maxAmountUsd
+  ) {
+    return NextResponse.json({ error: "«От» должно быть меньше «до»" }, { status: 400 });
+  }
 
   const term = await prisma.paymentTerm.update({ where: { id: params.id }, data });
 
