@@ -19,6 +19,7 @@ export default function SearchBar() {
     if (value) params.set("q", value);
     else params.delete("q");
     router.push(`/catalog?${params.toString()}`);
+    router.refresh();
   }
 
   return (
