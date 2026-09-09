@@ -20,7 +20,7 @@ export default function SearchSuggestionsDropdown({
         <Link
           key={s.id}
           href={`/product/${s.slug}`}
-          onMouseDown={onSelect}
+          onClick={onSelect}
           className="flex items-center gap-3 px-3 py-2 hover:bg-concrete transition-colors"
         >
           <div className="relative w-10 h-10 rounded-sm overflow-hidden bg-concrete shrink-0">
