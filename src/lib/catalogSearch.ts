@@ -109,7 +109,9 @@ export async function searchCatalog(p: CatalogParams, page: number) {
     return { products, total };
   }
 
-  const tsQuery = toTsQuery(q);
+  // prefixLast: true — ищем и по неоконченным словам тоже
+  // (человек мог не успеть дописать слово до конца или нажать «Найти» раньше)
+  const tsQuery = toTsQuery(q, true);
   if (!tsQuery) return { products: [], total: 0 };
 
   const conditions = buildSqlConditions(p);
