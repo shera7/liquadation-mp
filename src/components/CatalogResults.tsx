@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
 
 interface Product {
@@ -29,6 +29,14 @@ export default function CatalogResults({ initialProducts, total, usdToUzsRate, q
   const [products, setProducts] = useState(initialProducts);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  // При смене поиска/фильтров (queryString) сервер присылает новый
+  // initialProducts — синхронизируем локальное состояние с ним,
+  // иначе React переиспользует старое состояние компонента.
+  useEffect(() => {
+    setProducts(initialProducts);
+    setPage(1);
+  }, [queryString]);
 
   const hasMore = products.length < total;
 
