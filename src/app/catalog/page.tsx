@@ -1,74 +1,32 @@
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
 import Filters from "@/components/Filters";
 import SearchBar from "@/components/SearchBar";
 import SortSelect from "@/components/SortSelect";
 import CatalogResults from "@/components/CatalogResults";
 import { getEffectiveUsdRate } from "@/lib/exchangeRate";
+import { searchCatalog, type CatalogParams } from "@/lib/catalogSearch";
 
 export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 48;
-
 interface CatalogPageProps {
-  searchParams: {
-    q?: string;
-    category?: string;
-    status?: string;
-    condition?: string;
-    priceMin?: string;
-    priceMax?: string;
-    sort?: string;
-  };
+  searchParams: CatalogParams & { page?: string };
 }
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
-  const where: Prisma.ProductWhereInput = {
-    ...(searchParams.q && {
-      OR: [
-        { title: { contains: searchParams.q, mode: "insensitive" } },
-        { description: { contains: searchParams.q, mode: "insensitive" } },
-        { inventoryNumber: { contains: searchParams.q, mode: "insensitive" } },
-      ],
-    }),
-    ...(searchParams.category && {
-      category: { OR: [{ slug: searchParams.category }, { parent: { slug: searchParams.category } }] },
-    }),
-    ...(searchParams.status
-      ? { status: searchParams.status as any }
-      : { status: { not: "WITHDRAWN" } }),
-    ...(searchParams.condition && { condition: searchParams.condition as any }),
-    ...(searchParams.priceMin || searchParams.priceMax
-      ? {
-          price: {
-            ...(searchParams.priceMin && { gte: Number(searchParams.priceMin) }),
-            ...(searchParams.priceMax && { lte: Number(searchParams.priceMax) }),
-          },
-        }
-      : {}),
-  };
+  const page = Math.max(1, Number(searchParams.page) || 1);
 
-  const orderBy: Prisma.ProductOrderByWithRelationInput =
-    searchParams.sort === "price_asc"
-      ? { price: "asc" }
-      : searchParams.sort === "price_desc"
-      ? { price: "desc" }
-      : searchParams.sort === "popular"
-      ? { viewsCount: "desc" }
-      : { createdAt: "desc" };
-
-  const [products, total, categories, { rate: usdToUzsRate }] = await Promise.all([
-    prisma.product.findMany({
-      where,
-      orderBy,
-      take: PAGE_SIZE,
-      include: { images: true, category: true },
-    }),
-    prisma.product.count({ where }),
+  const [{ products, total }, categories, manufacturers, { rate: usdToUzsRate }] = await Promise.all([
+    searchCatalog(searchParams, page),
     prisma.category.findMany({
       where: { parentId: null },
       orderBy: { sortOrder: "asc" },
       include: { children: { orderBy: { sortOrder: "asc" } } },
+    }),
+    prisma.product.findMany({
+      where: { manufacturer: { not: null } },
+      select: { manufacturer: true },
+      distinct: ["manufacturer"],
+      orderBy: { manufacturer: "asc" },
     }),
     getEffectiveUsdRate(),
   ]);
@@ -86,7 +44,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
       </div>
 
       <div className="flex flex-col lg:flex-row gap-8">
-        <Filters categories={categories} />
+        <Filters categories={categories} manufacturers={manufacturers.map((m) => m.manufacturer!).filter(Boolean)} />
 
         <div className="flex-1">
           <div className="flex items-center justify-between mb-4">
