@@ -9,9 +9,11 @@ export default function HeroSearchBar() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setOpen(false);
     const params = new URLSearchParams();
     if (value.trim()) params.set("q", value.trim());
     router.push(`/catalog?${params.toString()}`);
+    router.refresh();
   }
 
   return (
