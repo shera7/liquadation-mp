@@ -28,13 +28,14 @@ export default function SearchBar() {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onBlur={() => setTimeout(() => setOpen(false), 200)}
         placeholder="Поиск по названию, производителю, модели, артикулу..."
-        className="flex-1 border border-line rounded-l-sm px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber"
+        className="flex-1 border border-line rounded-l-sm px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber relative z-10"
       />
       <button
         type="submit"
-        className="bg-graphite text-white px-5 rounded-r-sm text-sm font-semibold hover:bg-graphite2 transition-colors"
+        onMouseDown={(e) => e.preventDefault()}
+        className="relative z-10 bg-graphite text-white px-5 rounded-r-sm text-sm font-semibold hover:bg-graphite2 transition-colors"
       >
         Найти
       </button>
