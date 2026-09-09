@@ -11,6 +11,7 @@ interface CategoryWithChildren {
 
 interface FiltersProps {
   categories: CategoryWithChildren[];
+  manufacturers?: string[];
 }
 
 const STATUS_OPTIONS = [
@@ -24,7 +25,7 @@ const CONDITION_OPTIONS = [
   { value: "NEEDS_REPAIR", label: "Требует ремонта" },
 ];
 
-export default function Filters({ categories }: FiltersProps) {
+export default function Filters({ categories, manufacturers = [] }: FiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -135,6 +136,44 @@ export default function Filters({ categories }: FiltersProps) {
             placeholder="до"
             defaultValue={searchParams.get("priceMax") ?? ""}
             onBlur={(e) => updateParam("priceMax", e.target.value || null)}
+            className="w-full border border-line rounded-sm px-2 py-1.5 text-sm"
+          />
+        </div>
+      </div>
+
+      {manufacturers.length > 0 && (
+        <div>
+          <h4 className="font-display font-700 text-sm mb-3 text-graphite">Производитель</h4>
+          <select
+            value={searchParams.get("manufacturer") ?? ""}
+            onChange={(e) => updateParam("manufacturer", e.target.value || null)}
+            className="w-full border border-line rounded-sm px-2 py-1.5 text-sm"
+          >
+            <option value="">Все производители</option>
+            {manufacturers.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      <div>
+        <h4 className="font-display font-700 text-sm mb-3 text-graphite">Год выпуска</h4>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            placeholder="от"
+            defaultValue={searchParams.get("yearMin") ?? ""}
+            onBlur={(e) => updateParam("yearMin", e.target.value || null)}
+            className="w-full border border-line rounded-sm px-2 py-1.5 text-sm"
+          />
+          <input
+            type="number"
+            placeholder="до"
+            defaultValue={searchParams.get("yearMax") ?? ""}
+            onBlur={(e) => updateParam("yearMax", e.target.value || null)}
             className="w-full border border-line rounded-sm px-2 py-1.5 text-sm"
           />
         </div>
