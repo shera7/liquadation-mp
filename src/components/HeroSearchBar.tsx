@@ -2,10 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchSuggestions } from "@/hooks/useSearchSuggestions";
+import SearchSuggestionsDropdown from "./SearchSuggestionsDropdown";
 
 export default function HeroSearchBar() {
   const router = useRouter();
   const [value, setValue] = useState("");
+  const [open, setOpen] = useState(false);
+  const suggestions = useSearchSuggestions(value);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -34,15 +38,21 @@ export default function HeroSearchBar() {
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 200)}
         placeholder="Найти оборудование, станок, запчасть по названию или артикулу..."
-        className="w-full bg-white rounded-sm pl-11 pr-28 py-4 text-sm text-graphite placeholder:text-steel focus:outline-none focus:ring-2 focus:ring-amber"
+        className="w-full bg-white rounded-sm pl-11 pr-28 py-4 text-sm text-graphite placeholder:text-steel focus:outline-none focus:ring-2 focus:ring-amber relative z-10"
       />
       <button
         type="submit"
-        className="absolute right-1.5 top-1.5 bottom-1.5 bg-amber hover:bg-amber-dark text-graphite font-semibold px-5 rounded-sm text-sm transition-colors"
+        onMouseDown={(e) => e.preventDefault()}
+        className="absolute right-1.5 top-1.5 bottom-1.5 z-10 bg-amber hover:bg-amber-dark text-graphite font-semibold px-5 rounded-sm text-sm transition-colors"
       >
         Найти
       </button>
+      {open && (
+        <SearchSuggestionsDropdown suggestions={suggestions} onSelect={() => setOpen(false)} />
+      )}
     </form>
   );
 }
