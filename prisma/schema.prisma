@@ -89,7 +89,7 @@ model Product {
   @@index([categoryId])
   @@index([status])
   @@index([title])
-  @index([searchVector], type: Gin)
+  @@index([searchVector], type: Gin)
 }
 
 model ProductImage {
