@@ -77,6 +77,7 @@ model Product {
   specs            Json?             // { "Диаметр": "500 мм", "Вес": "1200 кг", ... }
 
   viewsCount       Int               @default(0)
+  searchVector     Unsupported("tsvector")?
 
   images           ProductImage[]
   documents        ProductDocument[]
@@ -88,6 +89,7 @@ model Product {
   @@index([categoryId])
   @@index([status])
   @@index([title])
+  @index([searchVector], type: Gin)
 }
 
 model ProductImage {
