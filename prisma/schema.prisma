@@ -219,6 +219,7 @@ model SiteSettings {
   metaTitle       String?
   metaDescription String?
   ogImageUrl      String?
+  contactAddress  String?
   usdToUzsRate       Decimal?  @db.Decimal(14, 4)
   usdToUzsRateDate   String?
   usdToUzsUpdatedAt  DateTime?
