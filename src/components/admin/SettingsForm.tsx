@@ -18,6 +18,7 @@ interface SettingsFormProps {
     contactEmail: string | null;
     contactTelegram: string | null;
     contactWhatsapp: string | null;
+    contactAddress: string | null;
     telegramBotToken: string | null;
     telegramManagerChatId: string | null;
     ndaBotToken: string | null;
@@ -150,6 +151,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       contactEmail: form.get("contactEmail") || null,
       contactTelegram: form.get("contactTelegram") || null,
       contactWhatsapp: form.get("contactWhatsapp") || null,
+      contactAddress: form.get("contactAddress") || null,
       telegramBotToken: form.get("telegramBotToken") || null,
       telegramManagerChatId: form.get("telegramManagerChatId") || null,
       ndaBotToken: form.get("ndaBotToken") || null,
@@ -201,6 +203,9 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
           </Field>
           <Field label="WhatsApp">
             <input name="contactWhatsapp" defaultValue={settings.contactWhatsapp ?? ""} className="input" />
+          </Field>
+          <Field label="Адрес">
+            <input name="contactAddress" defaultValue={settings.contactAddress ?? ""} className="input" placeholder="Ташкент, Узбекистан" />
           </Field>
         </div>
       </div>
