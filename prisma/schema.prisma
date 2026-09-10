@@ -208,7 +208,6 @@ model SiteSettings {
   contactEmail          String?
   contactTelegram       String?
   contactWhatsapp       String?
-  contactAddress        String?
   telegramBotToken      String?
   telegramManagerChatId String?
   telegramBotUsername   String?
