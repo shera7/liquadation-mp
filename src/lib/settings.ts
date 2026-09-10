@@ -12,6 +12,7 @@ export async function getSiteSettings() {
       contactEmail: null,
       contactTelegram: null,
       contactWhatsapp: null,
+      contactAddress: null,
       telegramBotToken: null,
       telegramManagerChatId: null,
       telegramBotUsername: null,
@@ -38,6 +39,7 @@ export async function upsertSiteSettings(data: {
   contactEmail?: string | null;
   contactTelegram?: string | null;
   contactWhatsapp?: string | null;
+  contactAddress?: string | null;
   telegramBotToken?: string | null;
   telegramManagerChatId?: string | null;
   ndaBotToken?: string | null;
