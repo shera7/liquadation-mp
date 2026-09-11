@@ -29,7 +29,7 @@ export default function ProductCard({ product, usdToUzsRate = null }: ProductCar
   return (
     <Link
       href={`/product/${product.slug}`}
-      className="group block bg-white border border-line rounded-sm overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all"
+      className="group block bg-white border border-line rounded-sm overflow-hidden hover:shadow-lg hover:-translate-y-1 hover:border-amber/40 transition-all duration-300 ease-out"
     >
       <div className="tag-perforation" />
       <div className="relative aspect-[4/3] bg-concrete overflow-hidden">
