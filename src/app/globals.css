@@ -27,3 +27,44 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+/* Плавное появление карточек/секций */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+/* Скелетон-заглушка на время загрузки */
+@keyframes shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+  100% {
+    background-position: 400px 0;
+  }
+}
+.skeleton {
+  background: linear-gradient(90deg, #e9e7e1 25%, #f2f1ed 37%, #e9e7e1 63%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+/* Мягкое появление секций при скролле (см. ScrollReveal.tsx) */
+.reveal-hidden {
+  opacity: 0;
+  transform: translateY(16px);
+}
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
