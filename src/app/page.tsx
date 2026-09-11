@@ -6,6 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import QuickRequestForm from "@/components/QuickRequestForm";
 import HeroSearchBar from "@/components/HeroSearchBar";
 import MarketingBlockRenderer from "@/components/marketing/MarketingBlockRenderer";
+import ScrollReveal from "@/components/ScrollReveal";
 
 export const dynamic = "force-dynamic";
 
@@ -132,11 +133,13 @@ export default async function HomePage() {
       {/* Маркетинговые блоки — управляются администратором в разделе «Маркетинг» */}
       {marketingBlocks.length > 0 ? (
         marketingBlocks.map((block) => (
-          <MarketingBlockRenderer key={block.id} block={block} usdToUzsRate={usdToUzsRate} />
+          <ScrollReveal key={block.id}>
+            <MarketingBlockRenderer block={block} usdToUzsRate={usdToUzsRate} />
+          </ScrollReveal>
         ))
       ) : (
         <>
-          {/* Категории — запасной вариант, пока в админке не настроены маркетинговые блоки */}
+          <ScrollReveal>
           <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
             <h2 className="font-display font-700 text-2xl text-graphite mb-6">Категории имущества</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -154,10 +157,12 @@ export default async function HomePage() {
               ))}
             </div>
           </section>
+          </ScrollReveal>
         </>
       )}
 
       {/* Как проходит покупка */}
+      <ScrollReveal>
       <section id="how-it-works" className="bg-white border-y border-line">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
           <span className="font-mono text-xs tracking-widest text-amber-dark">ПРОЦЕСС</span>
@@ -181,11 +186,13 @@ export default async function HomePage() {
               </div>
             ))}
           </div>
-        </div>
+             </div>
       </section>
+      </ScrollReveal>
 
       {/* Быстрая заявка */}
-      <section id="quick-request" className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16">
+      <ScrollReveal>
+      <section className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16">
         <h2 className="font-display font-700 text-2xl text-graphite mb-2">
           Не нашли нужную позицию?
         </h2>
@@ -194,6 +201,7 @@ export default async function HomePage() {
         </p>
         <QuickRequestForm />
       </section>
+      </ScrollReveal>
     </div>
   );
 }
