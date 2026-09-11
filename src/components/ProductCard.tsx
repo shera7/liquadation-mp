@@ -29,10 +29,10 @@ export default function ProductCard({ product, usdToUzsRate = null }: ProductCar
   return (
     <Link
       href={`/product/${product.slug}`}
-      className="group block bg-white border border-line rounded-sm overflow-hidden hover:shadow-lg hover:-translate-y-1 hover:border-amber/40 transition-all duration-300 ease-out"
+      className="group flex flex-col h-full bg-white border border-line rounded-sm overflow-hidden hover:shadow-lg hover:-translate-y-1 hover:border-amber/40 transition-all duration-300 ease-out"
     >
       <div className="tag-perforation" />
-      <div className="relative aspect-[4/3] bg-concrete overflow-hidden">
+      <div className="relative aspect-[4/3] bg-concrete overflow-hidden shrink-0">
         {image ? (
           <Image
             src={image}
@@ -61,7 +61,7 @@ export default function ProductCard({ product, usdToUzsRate = null }: ProductCar
         )}
       </div>
 
-      <div className="p-4">
+      <div className="flex flex-col flex-1 p-4">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[11px] uppercase tracking-wide text-steel">{product.category.name}</span>
           <span className="font-mono text-[11px] text-steel">№{product.inventoryNumber}</span>
@@ -69,15 +69,20 @@ export default function ProductCard({ product, usdToUzsRate = null }: ProductCar
 
         <h3 className="font-display font-700 text-graphite leading-snug mb-2 line-clamp-2 min-h-[2.75rem]">{product.title}</h3>
 
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-mono-tabular font-semibold text-lg text-graphite">{dualPrice.primary}</div>
-            {dualPrice.secondary && <div className="font-mono-tabular text-xs text-steel">{dualPrice.secondary}</div>}
-          </div>
-          <span className="text-xs text-steel">{CONDITION_LABELS[product.condition]}</span>
-        </div>
+        {/* Распорка — прижимает блок цены к низу карточки одинаково для всех */}
+        <div className="flex-1" />
 
-        {product.location && <div className="mt-2 text-xs text-steel">{product.location}</div>}
+        <div>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-mono-tabular font-semibold text-lg text-graphite">{dualPrice.primary}</div>
+              <div className="font-mono-tabular text-xs text-steel min-h-[1rem]">{dualPrice.secondary || "\u00A0"}</div>
+            </div>
+            <span className="text-xs text-steel shrink-0">{CONDITION_LABELS[product.condition]}</span>
+          </div>
+
+          <div className="mt-2 text-xs text-steel min-h-[1rem]">{product.location || "\u00A0"}</div>
+        </div>
       </div>
     </Link>
   );
