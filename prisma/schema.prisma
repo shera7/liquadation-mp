@@ -145,6 +145,8 @@ model Request {
 
   seq             Int      @unique @default(autoincrement())
   requestNumber   String?  @unique
+  groupId         String?  // объединяет заявки, оформленные одним запросом на несколько товаров сразу
+  customerId      String?  // задел под будущий личный кабинет клиента — пока не используется
   assigneeId      String?
   assigneeName    String?
   statusChangedAt DateTime @default(now())
@@ -181,6 +183,7 @@ model Request {
 
   @@index([status])
   @@index([productId])
+  @@index([groupId])
 }
 
 enum AdminRole {
