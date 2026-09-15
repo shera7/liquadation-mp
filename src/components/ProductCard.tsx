@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatPrice, formatDualPrice, CONDITION_LABELS } from "@/lib/utils";
 import StatusBadge from "./StatusBadge";
+import AddToSelectionButton from "./AddToSelectionButton";
 
 interface ProductCardProps {
   product: {
@@ -48,6 +49,13 @@ export default function ProductCard({ product, usdToUzsRate = null }: ProductCar
         <div className="absolute top-2 left-2">
           <StatusBadge status={product.status} />
         </div>
+
+        <AddToSelectionButton
+          productId={product.id}
+          slug={product.slug}
+          title={product.title}
+          image={image ?? null}
+        />
 
         {photoCount > 1 && (
           <span className="absolute bottom-2 right-2 text-[11px] font-medium bg-graphite/80 text-white px-2 py-0.5 rounded-sm flex items-center gap-1">
