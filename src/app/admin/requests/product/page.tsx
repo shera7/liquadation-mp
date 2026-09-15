@@ -14,6 +14,7 @@ interface PageProps {
     sort?: string;
     page?: string;
     pageSize?: string;
+    groupId?: string;
   };
 }
 
@@ -22,6 +23,7 @@ export default async function ProductRequestsPage({ searchParams }: PageProps) {
   const pageSize = Number(searchParams.pageSize) || 50;
 
   const where: any = { type: "PRODUCT" };
+  if (searchParams.groupId) where.groupId = searchParams.groupId;
   if (searchParams.q) {
     where.OR = [
       { requestNumber: { contains: searchParams.q, mode: "insensitive" } },
