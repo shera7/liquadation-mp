@@ -36,7 +36,7 @@ function escapeHtml(text: string) {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-export async function notifyManagerNewRequest(payload: RequestNotificationPayload) {
+async function sendToAllRecipients(text: string) {
   const settings = await getSiteSettings();
   const token = settings.telegramBotToken;
 
@@ -46,8 +46,6 @@ export async function notifyManagerNewRequest(payload: RequestNotificationPayloa
   }
 
   const recipients = await prisma.telegramRecipient.findMany({ where: { active: true } });
-
-  // Обратная совместимость: если список получателей ещё пуст, используем старое одиночное поле
   const chatIds =
     recipients.length > 0
       ? recipients.map((r) => r.chatId)
@@ -57,6 +55,31 @@ export async function notifyManagerNewRequest(payload: RequestNotificationPayloa
 
   if (chatIds.length === 0) {
     console.warn("[telegram] Нет ни одного получателя уведомлений — добавьте хотя бы одного в Админка → Настройки");
+    return;
+  }
+
+  await Promise.all(
+    chatIds.map(async (chatId) => {
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId, text, parse_mode: "HTML",
+          disable_web_page_preview: true }),
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        console.error(`[telegram] Ошибка отправки на ${chatId}:`, body);
+      }
+    })
+  );
+}
+
+export async function notifyManagerNewRequest(payload: RequestNotificationPayload) {
+  const settings = await getSiteSettings();
+  if (!settings.telegramBotToken) {
+    console.warn("[telegram] Токен бота не задан — настройте его в Админка → Настройки");
     return;
   }
 
@@ -98,21 +121,49 @@ export async function notifyManagerNewRequest(payload: RequestNotificationPayloa
   }
 
   const text = lines.join("\n");
+  await sendToAllRecipients(text);
+}
 
-  await Promise.all(
-    chatIds.map(async (chatId) => {
-      const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-              chat_id: chatId, text, parse_mode: "HTML", 
-              disable_web_page_preview: true }),
-        signal: AbortSignal.timeout(8000),
-      });
-      if (!res.ok) {
-        const body = await res.text();
-        console.error(`[telegram] Ошибка отправки на ${chatId}:`, body);
-      }
-    })
-  );
+interface CartNotificationPayload {
+  groupId: string;
+  items: { title: string; quantity: number; productUrl: string }[];
+  clientName: string;
+  company: string;
+  companyInn: string;
+  phone: string;
+  telegram?: string | null;
+  email?: string | null;
+  contactMethod?: string | null;
+  comment?: string | null;
+  adminUrl?: string;
+}
+
+/** Одно консолидированное уведомление на заявку сразу по нескольким товарам. */
+export async function notifyManagerNewCartRequest(payload: CartNotificationPayload) {
+  const lines: string[] = [
+    `<b>Новая заявка на ${payload.items.length} товаров</b> (группа ${payload.groupId.slice(-6)})`,
+    "",
+  ];
+
+  payload.items.forEach((item, i) => {
+    lines.push(`${i + 1}. <a href="${item.productUrl}">${escapeHtml(item.title)}</a> × ${item.quantity}`);
+  });
+
+  lines.push("");
+  lines.push(`<b>Клиент:</b> ${escapeHtml(payload.clientName)}`);
+  lines.push(`<b>Компания:</b> ${escapeHtml(payload.company)}`);
+  lines.push(`<b>ИНН/ПИНФЛ:</b> ${escapeHtml(payload.companyInn)}`);
+  lines.push(`<b>Телефон:</b> ${escapeHtml(payload.phone)}`);
+  if (payload.telegram) lines.push(`<b>Telegram/WhatsApp:</b> ${escapeHtml(payload.telegram)}`);
+  if (payload.email) lines.push(`<b>Email:</b> ${escapeHtml(payload.email)}`);
+  if (payload.contactMethod) {
+    lines.push(`<b>Способ связи:</b> ${CONTACT_METHOD_LABELS[payload.contactMethod] ?? payload.contactMethod}`);
+  }
+  if (payload.comment) lines.push(`<b>Комментарий:</b> ${escapeHtml(payload.comment)}`);
+  if (payload.adminUrl) {
+    lines.push("");
+    lines.push(`<a href="${payload.adminUrl}">Открыть в CRM</a>`);
+  }
+
+  await sendToAllRecipients(lines.join("\n"));
 }
