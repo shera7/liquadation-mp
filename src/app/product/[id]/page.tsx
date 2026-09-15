@@ -8,6 +8,7 @@ import { buildProductSeo, buildProductJsonLd, buildBreadcrumbJsonLd } from "@/li
 import RequestForm from "@/components/RequestForm";
 import ProductGallery from "@/components/ProductGallery";
 import StatusBadge from "@/components/StatusBadge";
+import AddToSelectionButton from "@/components/AddToSelectionButton";
 
 export const dynamic = "force-dynamic";
 
@@ -241,6 +242,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   <RequestForm productId={product.id} productTitle={product.title} mode="price" />
                 )}
                 <RequestForm productId={product.id} productTitle={product.title} mode="question" />
+                <AddToSelectionButton
+                  productId={product.id}
+                  slug={product.slug}
+                  title={product.title}
+                  image={product.images[0]?.url ?? null}
+                  variant="full"
+                />
               </div>
             )}
           </div>
