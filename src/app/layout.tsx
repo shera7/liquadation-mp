@@ -4,6 +4,8 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getSiteSettings } from "@/lib/settings";
+import { SelectionProvider } from "@/lib/selection";
+import SelectionBar from "@/components/SelectionBar";
 
 export const dynamic = "force-dynamic";
 
@@ -49,9 +51,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="ru">
       <body className={`${archivo.variable} ${inter.variable} ${plexMono.variable} font-body antialiased`}>
-        <Header siteName={settings.siteName} />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
+        <SelectionProvider>
+          <Header siteName={settings.siteName} />
+          <main className="min-h-screen">{children}</main>
+          <Footer />
+          <SelectionBar />
+        </SelectionProvider>
       </body>
     </html>
   );
