@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { REQUEST_STATUS_LABELS } from "@/lib/utils";
 import { formatDuration } from "@/lib/sla";
@@ -20,6 +21,7 @@ interface RequestRow {
   desiredPrice: string | null;
   desiredPriceCurrency: string | null;
   paymentTermLabel: string | null;
+  groupId: string | null;
   slaState: "ok" | "warning" | "breached" | "none";
   slaRemainingMs: number | null;
 }
@@ -118,7 +120,17 @@ export default function RequestsTable({
                   <div className="font-medium text-graphite">{r.name}</div>
                   <div className="text-xs text-steel">{r.phone}</div>
                 </td>
-                <td className="px-4 py-3 text-steel">{r.product?.title ?? r.interestedCategory ?? "—"}</td>
+                <td className="px-4 py-3 text-steel">
+                  {r.product?.title ?? r.interestedCategory ?? "—"}
+                  {r.groupId && (
+                    <Link
+                      href={`/admin/requests?groupId=${r.groupId}`}
+                      className="block text-[10px] text-amber-dark hover:underline mt-0.5"
+                    >
+                      часть групповой заявки →
+                    </Link>
+                  )}
+                </td>
                 <td className="px-4 py-3 text-steel text-xs">{r.assigneeName ?? "Не назначен"}</td>
                 <td className="px-4 py-3 text-graphite text-xs font-mono-tabular">
                   {r.desiredPrice ? `${r.desiredPrice} ${r.desiredPriceCurrency ?? ""}` : "—"}
