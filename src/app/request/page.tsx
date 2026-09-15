@@ -87,7 +87,13 @@ export default function RequestCartPage() {
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setErrorMsg(data.error?.fieldErrors ? Object.values(data.error.fieldErrors).flat().join(", ") : "Не удалось отправить заявку");
+        const detail =
+          data.error?.fieldErrors
+            ? Object.values(data.error.fieldErrors).flat().join(", ")
+            : typeof data.error === "string"
+              ? data.error
+              : null;
+        setErrorMsg(`Не удалось отправить заявку (код ${res.status})${detail ? `: ${detail}` : ""}`);
         setStatus("idle");
         return;
       }
