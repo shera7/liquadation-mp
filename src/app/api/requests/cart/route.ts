@@ -10,6 +10,8 @@ const cartSchema = z.object({
       z.object({
         productId: z.string(),
         quantity: z.number().int().positive().default(1),
+        desiredPrice: z.string().optional(),
+        desiredPriceCurrency: z.enum(["USD", "UZS"]).optional(),
       })
     )
     .min(1, "Список товаров пуст"),
@@ -50,6 +52,8 @@ export async function POST(req: NextRequest) {
           productId: item.productId,
           groupId,
           quantity: item.quantity,
+          desiredPrice: item.desiredPrice || undefined,
+          desiredPriceCurrency: item.desiredPrice ? item.desiredPriceCurrency ?? "USD" : undefined,
           name: data.name,
           company: data.company,
           companyInn: data.companyInn,
@@ -65,6 +69,18 @@ export async function POST(req: NextRequest) {
     )
   );
 
+  // Присваиваем каждому такой же человекочитаемый номер, как у одиночных заявок
+  // (REQ-2026-000013), используя автоинкрементный seq, полученный при создании.
+  const year = new Date().getFullYear();
+  await prisma.$transaction(
+    created.map((r) =>
+      prisma.request.update({
+        where: { id: r.id },
+        data: { requestNumber: `REQ-${year}-${String(r.seq).padStart(6, "0")}` },
+      })
+    )
+  );
+
   waitUntil(
     (async () => {
       try {
@@ -73,6 +89,8 @@ export async function POST(req: NextRequest) {
           return {
             title: product?.title ?? "Товар удалён",
             quantity: item.quantity,
+            desiredPrice: item.desiredPrice,
+            desiredPriceCurrency: item.desiredPriceCurrency,
             productUrl: product ? `${req.nextUrl.origin}/product/${product.slug}` : req.nextUrl.origin,
           };
         });
