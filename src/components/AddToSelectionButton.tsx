@@ -38,20 +38,24 @@ export default function AddToSelectionButton({ productId, slug, title, image, va
   return (
     <button
       onClick={handleClick}
-      aria-label={selected ? "Убрать из списка заявки" : "Добавить в список заявки"}
-      title={selected ? "Убрать из списка заявки" : "Добавить в список заявки"}
-      className={`absolute top-2 right-2 z-10 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-        selected ? "bg-okgreen text-white" : "bg-white/90 text-graphite hover:bg-white"
+      className={`absolute top-2 right-2 z-10 flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1.5 rounded-sm shadow-sm transition-colors ${
+        selected ? "bg-okgreen text-white" : "bg-white text-graphite border border-line hover:border-amber"
       }`}
     >
       {selected ? (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M20 6 9 17l-5-5" />
-        </svg>
+        <>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+          В заявке
+        </>
       ) : (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
+        <>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 5v14M5 12h14" />
+          </svg>
+          В заявку
+        </>
       )}
     </button>
   );
