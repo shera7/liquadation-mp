@@ -8,6 +8,7 @@ export interface SelectedItem {
   title: string;
   image: string | null;
   quantity: number;
+  maxQuantity: number;
   desiredPrice?: string;
   desiredPriceCurrency?: "USD" | "UZS";
 }
@@ -56,7 +57,11 @@ export function SelectionProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const setQuantity = useCallback((productId: string, quantity: number) => {
-    setItems((prev) => prev.map((i) => (i.productId === productId ? { ...i, quantity: Math.max(1, quantity) } : i)));
+    setItems((prev) =>
+      prev.map((i) =>
+        i.productId === productId ? { ...i, quantity: Math.min(Math.max(1, quantity), i.maxQuantity) } : i
+      )
+    );
   }, []);
 
   const setDesiredPrice = useCallback((productId: string, desiredPrice: string, desiredPriceCurrency: "USD" | "UZS") => {
