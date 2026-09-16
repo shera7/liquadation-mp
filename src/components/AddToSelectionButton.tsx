@@ -7,19 +7,19 @@ interface AddToSelectionButtonProps {
   slug: string;
   title: string;
   image: string | null;
+  maxQuantity: number;
   variant?: "icon" | "full";
 }
 
-export default function AddToSelectionButton({ productId, slug, title, image, variant = "icon" }: AddToSelectionButtonProps) {
+export default function AddToSelectionButton({ productId, slug, title, image, maxQuantity, variant = "icon" }: AddToSelectionButtonProps) {
   const { isSelected, toggle } = useSelection();
   const selected = isSelected(productId);
 
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    toggle({ productId, slug, title, image });
+    toggle({ productId, slug, title, image, maxQuantity });
   }
-
   if (variant === "full") {
     return (
       <button
