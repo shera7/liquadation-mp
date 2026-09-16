@@ -126,7 +126,7 @@ export async function notifyManagerNewRequest(payload: RequestNotificationPayloa
 
 interface CartNotificationPayload {
   groupId: string;
-  items: { title: string; quantity: number; productUrl: string }[];
+  items: { title: string; quantity: number; productUrl: string; desiredPrice?: string | null; desiredPriceCurrency?: string | null }[];
   clientName: string;
   company: string;
   companyInn: string;
@@ -146,7 +146,8 @@ export async function notifyManagerNewCartRequest(payload: CartNotificationPaylo
   ];
 
   payload.items.forEach((item, i) => {
-    lines.push(`${i + 1}. <a href="${item.productUrl}">${escapeHtml(item.title)}</a> × ${item.quantity}`);
+    const priceStr = item.desiredPrice ? ` — желаемая цена: ${escapeHtml(item.desiredPrice)} ${item.desiredPriceCurrency ?? ""}` : "";
+    lines.push(`${i + 1}. <a href="${item.productUrl}">${escapeHtml(item.title)}</a> × ${item.quantity}${priceStr}`);
   });
 
   lines.push("");
