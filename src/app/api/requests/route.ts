@@ -115,6 +115,20 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Количество в заявке не может превышать реальный остаток товара на складе
+  if (data.type === "PRODUCT" && data.productId && data.quantity) {
+    const product = await prisma.product.findUnique({
+      where: { id: data.productId },
+      select: { quantity: true },
+    });
+    if (product && data.quantity > product.quantity) {
+      return NextResponse.json(
+        { error: { fieldErrors: { quantity: [`В наличии только ${product.quantity} шт.`] } } },
+        { status: 400 }
+      );
+    }
+  }
+
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     req.headers.get("x-real-ip") ||
