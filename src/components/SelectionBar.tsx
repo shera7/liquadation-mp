@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSelection } from "@/lib/selection";
 
 export default function SelectionBar() {
   const { items } = useSelection();
+  const pathname = usePathname();
 
+  // Плавающая панель — только для публичного сайта, в админке она не нужна
+  if (pathname?.startsWith("/admin")) return null;
   if (items.length === 0) return null;
 
   return (
