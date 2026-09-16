@@ -8,6 +8,8 @@ export interface SelectedItem {
   title: string;
   image: string | null;
   quantity: number;
+  desiredPrice?: string;
+  desiredPriceCurrency?: "USD" | "UZS";
 }
 
 interface SelectionContextValue {
@@ -15,9 +17,11 @@ interface SelectionContextValue {
   isSelected: (productId: string) => boolean;
   toggle: (item: Omit<SelectedItem, "quantity">) => void;
   setQuantity: (productId: string, quantity: number) => void;
+  setDesiredPrice: (productId: string, price: string, currency: "USD" | "UZS") => void;
   remove: (productId: string) => void;
   clear: () => void;
 }
+
 
 const STORAGE_KEY = "request_selection";
 
