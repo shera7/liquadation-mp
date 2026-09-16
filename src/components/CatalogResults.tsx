@@ -16,6 +16,7 @@ interface Product {
   status: string;
   condition: string;
   location: string | null;
+  quantity: number;
   images: { url: string }[];
   category: { name: string; slug: string };
 }
