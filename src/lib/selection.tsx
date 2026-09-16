@@ -59,6 +59,10 @@ export function SelectionProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => prev.map((i) => (i.productId === productId ? { ...i, quantity: Math.max(1, quantity) } : i)));
   }, []);
 
+  const setDesiredPrice = useCallback((productId: string, desiredPrice: string, desiredPriceCurrency: "USD" | "UZS") => {
+    setItems((prev) => prev.map((i) => (i.productId === productId ? { ...i, desiredPrice, desiredPriceCurrency } : i)));
+  }, []);
+
   const remove = useCallback((productId: string) => {
     setItems((prev) => prev.filter((i) => i.productId !== productId));
   }, []);
@@ -66,7 +70,7 @@ export function SelectionProvider({ children }: { children: React.ReactNode }) {
   const clear = useCallback(() => setItems([]), []);
 
   return (
-    <SelectionContext.Provider value={{ items, isSelected, toggle, setQuantity, remove, clear }}>
+    <SelectionContext.Provider value={{ items, isSelected, toggle, setQuantity, setDesiredPrice, remove, clear }}>
       {children}
     </SelectionContext.Provider>
   );
