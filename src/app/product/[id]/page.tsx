@@ -237,7 +237,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </div>
             ) : (
               <div className="space-y-2">
-                <RequestForm productId={product.id} productTitle={product.title} mode="request" />
+                <RequestForm productId={product.id} productTitle={product.title} mode="request" availableQuantity={product.quantity} />
                 {product.priceOnRequest && (
                   <RequestForm productId={product.id} productTitle={product.title} mode="price" />
                 )}
@@ -247,6 +247,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   slug={product.slug}
                   title={product.title}
                   image={product.images[0]?.url ?? null}
+                  maxQuantity={product.quantity}
                   variant="full"
                 />
               </div>
