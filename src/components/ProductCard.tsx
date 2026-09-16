@@ -16,6 +16,7 @@ interface ProductCardProps {
     status: string;
     condition: string;
     location: string | null;
+    quantity: number;
     images: { url: string }[];
     category: { name: string; slug: string };
   };
@@ -55,6 +56,7 @@ export default function ProductCard({ product, usdToUzsRate = null }: ProductCar
           slug={product.slug}
           title={product.title}
           image={image ?? null}
+          maxQuantity={product.quantity}
         />
 
         {photoCount > 1 && (
