@@ -13,7 +13,7 @@ interface StoredNda {
 }
 
 export default function RequestCartPage() {
-  const { items, setQuantity, remove, clear } = useSelection();
+  const { items, setQuantity, setDesiredPrice, remove, clear } = useSelection();
   const [stage, setStage] = useState<"review" | "nda" | "form" | "success">("review");
   const [ndaRequired, setNdaRequired] = useState(false);
   const [ndaData, setNdaData] = useState<StoredNda | null>(null);
@@ -72,7 +72,12 @@ export default function RequestCartPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+          items: items.map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            desiredPrice: i.desiredPrice || undefined,
+            desiredPriceCurrency: i.desiredPriceCurrency,
+          })),
           name: form.get("name"),
           company: form.get("company"),
           companyInn: form.get("companyInn"),
@@ -138,37 +143,56 @@ export default function RequestCartPage() {
 
       <div className="space-y-3 mb-8">
         {items.map((item) => (
-          <div key={item.productId} className="flex items-center gap-4 bg-white border border-line rounded-sm p-3">
-            <div className="relative w-16 h-16 shrink-0 rounded-sm overflow-hidden bg-concrete">
-              {item.image && <Image src={item.image} alt={item.title} fill className="object-cover" />}
-            </div>
-            <Link href={`/product/${item.slug}`} className="flex-1 text-sm text-graphite hover:text-amber-dark">
-              {item.title}
-            </Link>
-            <div className="flex items-center gap-1.5">
+          <div key={item.productId} className="bg-white border border-line rounded-sm p-3 space-y-2">
+            <div className="flex items-center gap-4">
+              <div className="relative w-16 h-16 shrink-0 rounded-sm overflow-hidden bg-concrete">
+                {item.image && <Image src={item.image} alt={item.title} fill className="object-cover" />}
+              </div>
+              <Link href={`/product/${item.slug}`} className="flex-1 text-sm text-graphite hover:text-amber-dark">
+                {item.title}
+              </Link>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setQuantity(item.productId, item.quantity - 1)}
+                  className="w-7 h-7 border border-line rounded-sm text-steel hover:border-amber"
+                >
+                  −
+                </button>
+                <span className="w-8 text-center text-sm font-mono-tabular">{item.quantity}</span>
+                <button
+                  type="button"
+                  onClick={() => setQuantity(item.productId, item.quantity + 1)}
+                  className="w-7 h-7 border border-line rounded-sm text-steel hover:border-amber"
+                >
+                  +
+                </button>
+              </div>
               <button
                 type="button"
-                onClick={() => setQuantity(item.productId, item.quantity - 1)}
-                className="w-7 h-7 border border-line rounded-sm text-steel hover:border-amber"
+                onClick={() => remove(item.productId)}
+                className="text-xs text-alert hover:underline"
               >
-                −
-              </button>
-              <span className="w-8 text-center text-sm font-mono-tabular">{item.quantity}</span>
-              <button
-                type="button"
-                onClick={() => setQuantity(item.productId, item.quantity + 1)}
-                className="w-7 h-7 border border-line rounded-sm text-steel hover:border-amber"
-              >
-                +
+                Убрать
               </button>
             </div>
-            <button
-              type="button"
-              onClick={() => remove(item.productId)}
-              className="text-xs text-alert hover:underline"
-            >
-              Убрать
-            </button>
+
+            <div className="grid grid-cols-[7fr_3fr] gap-2 pl-20">
+              <input
+                placeholder="Желаемая цена (необязательно)"
+                defaultValue={item.desiredPrice ?? ""}
+                onBlur={(e) => setDesiredPrice(item.productId, e.target.value, item.desiredPriceCurrency ?? "USD")}
+                className="border border-line rounded-sm px-2 py-1.5 text-sm"
+              />
+              <select
+                value={item.desiredPriceCurrency ?? "USD"}
+                onChange={(e) => setDesiredPrice(item.productId, item.desiredPrice ?? "", e.target.value as "USD" | "UZS")}
+                className="border border-line rounded-sm px-2 py-1.5 text-sm"
+              >
+                <option value="USD">USD</option>
+                <option value="UZS">UZS</option>
+              </select>
+            </div>
           </div>
         ))}
       </div>
