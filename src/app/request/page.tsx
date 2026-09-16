@@ -150,6 +150,7 @@ export default function RequestCartPage() {
               </div>
               <Link href={`/product/${item.slug}`} className="flex-1 text-sm text-graphite hover:text-amber-dark">
                 {item.title}
+                <div className="text-[11px] text-steel font-normal">В наличии: {item.maxQuantity} шт.</div>
               </Link>
               <div className="flex items-center gap-1.5">
                 <button
@@ -163,7 +164,8 @@ export default function RequestCartPage() {
                 <button
                   type="button"
                   onClick={() => setQuantity(item.productId, item.quantity + 1)}
-                  className="w-7 h-7 border border-line rounded-sm text-steel hover:border-amber"
+                  disabled={item.quantity >= item.maxQuantity}
+                  className="w-7 h-7 border border-line rounded-sm text-steel hover:border-amber disabled:opacity-30 disabled:hover:border-line"
                 >
                   +
                 </button>
