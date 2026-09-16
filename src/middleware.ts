@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifySessionToken } from "@/lib/auth";
 
+const PUBLIC_API_EXCEPTIONS = ["/api/requests/cart"]; // публичные роуты внутри иначе защищённых префиксов
+
 const PROTECTED_API_RULES: { prefix: string; methods: string[] }[] = [
   { prefix: "/api/products", methods: ["POST", "PATCH", "DELETE"] },
   { prefix: "/api/categories", methods: ["POST", "PATCH", "DELETE"] },
@@ -28,11 +30,12 @@ export async function middleware(req: NextRequest) {
 
   console.log("[middleware]", pathname, "token present:", Boolean(token), "session valid:", Boolean(session));
 
+  const isPublicException = PUBLIC_API_EXCEPTIONS.some((p) => pathname.startsWith(p));
   const isAdminPage = pathname.startsWith("/admin");
   const apiRule = PROTECTED_API_RULES.find(
     (r) => pathname.startsWith(r.prefix) && r.methods.includes(req.method)
   );
-  const needsAuth = isAdminPage || Boolean(apiRule);
+  const needsAuth = !isPublicException && (isAdminPage || Boolean(apiRule));
 
   if (needsAuth && !session) {
     if (pathname.startsWith("/api")) {
