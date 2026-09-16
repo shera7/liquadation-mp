@@ -37,9 +37,20 @@ export async function POST(req: NextRequest) {
 
   const products = await prisma.product.findMany({
     where: { id: { in: data.items.map((i) => i.productId) } },
-    select: { id: true, title: true, slug: true },
+    select: { id: true, title: true, slug: true, quantity: true },
   });
   const productById = new Map(products.map((p) => [p.id, p]));
+
+  // Количество ни по одной позиции не может превышать реальный остаток на складе
+  for (const item of data.items) {
+    const product = productById.get(item.productId);
+    if (product && item.quantity > product.quantity) {
+      return NextResponse.json(
+        { error: `«${product.title}»: в наличии только ${product.quantity} шт.` },
+        { status: 400 }
+      );
+    }
+  }
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || null;
   const groupId = crypto.randomUUID();
