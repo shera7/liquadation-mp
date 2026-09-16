@@ -7,6 +7,7 @@ interface RequestFormProps {
   productId: string;
   productTitle: string;
   mode?: "request" | "price" | "question";
+  availableQuantity?: number;
 }
 
 const MODE_LABELS: Record<string, string> = {
@@ -27,7 +28,7 @@ interface PaymentTerm {
   label: string;
 }
 
-export default function RequestForm({ productId, productTitle, mode = "request" }: RequestFormProps) {
+export default function RequestForm({ productId, productTitle, mode = "request", availableQuantity }: RequestFormProps) {
   const [stage, setStage] = useState<"closed" | "nda" | "form">("closed");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [ndaData, setNdaData] = useState<StoredNda | null>(null);
@@ -190,9 +191,24 @@ export default function RequestForm({ productId, productTitle, mode = "request" 
           className="input"
         />
       </div>
-      <input name="email" type="email" placeholder="Email" className="input" />
-      <input name="quantity" type="number" min={1} placeholder="Количество" className="input" />
-<div>
+           <input name="email" type="email" placeholder="Email" className="input" />
+      {availableQuantity !== undefined && availableQuantity > 1 ? (
+        <div>
+          <input
+            name="quantity"
+            type="number"
+            min={1}
+            max={availableQuantity}
+            defaultValue={1}
+            placeholder="Количество"
+            className="input"
+          />
+          <div className="text-[11px] text-steel mt-1">В наличии: {availableQuantity} шт.</div>
+        </div>
+      ) : (
+        <input type="hidden" name="quantity" value={1} />
+      )}
+      <div>
         <label className="block text-xs text-steel mb-1">Желаемая цена (необязательно)</label>
         <div className="grid grid-cols-[7fr_3fr] gap-2">
           <input name="desiredPrice" placeholder="Например, 1200" className="input" />
