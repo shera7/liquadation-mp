@@ -52,15 +52,14 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/admin", req.url));
   }
 
-  return NextResponse.next();
+  // Прокидываем текущий путь дальше запросом-заголовком — серверные компоненты
+  // (например, корневой layout) не могут иначе узнать pathname, чтобы решить,
+  // показывать ли публичные Header/Footer на страницах админки.
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-pathname", pathname);
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {
-  matcher: [
-    "/admin/:path*",
-    "/api/products/:path*",
-    "/api/categories/:path*",
-    "/api/requests/:path*",
-    "/api/admin/:path*",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
