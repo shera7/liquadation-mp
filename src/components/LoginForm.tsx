@@ -46,7 +46,7 @@ export default function LoginForm({ siteName = "Актив.Каталог" }: { 
   }
 
   return (
-    <div className="min-h-screen bg-graphite flex items-center justify-center px-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
       <div
         aria-hidden
         className="fixed inset-y-0 left-0 z-50 bg-graphite pointer-events-none overflow-hidden"
