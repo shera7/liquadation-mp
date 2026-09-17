@@ -48,13 +48,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const settings = await getSiteSettings();
-  const pathname = headers().get("x-pathname") ?? "";
-  const isAdmin = pathname.startsWith("/admin");
+    const pathname = headers().get("x-pathname") ?? "";
+  const isBarePage =
+    pathname.startsWith("/admin") ||
+    pathname === "/login" ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password");
 
   return (
     <html lang="ru">
       <body className={`${archivo.variable} ${inter.variable} ${plexMono.variable} font-body antialiased`}>
-        {isAdmin ? (
+        {isBarePage ? (
           children
         ) : (
           <SelectionProvider>
