@@ -71,8 +71,12 @@ function project(lon: number, lat: number) {
 
 const DOTS: { x: number; y: number }[] = [];
 for (let r = 0; r < ROWS; r++) {
+  // Через строку — сдвиг на полклетки, как в референсе: не прямоугольная
+  // сетка, а "шахматная"/кирпичная — так карта выглядит органичнее,
+  // а не рядами ровных квадратов.
+  const rowOffset = r % 2 === 1 ? 0.5 : 0;
   for (let c = 0; c < COLS; c++) {
-    const lon = LON_MIN + ((c + 0.5) / COLS) * (LON_MAX - LON_MIN);
+    const lon = LON_MIN + ((c + 0.5 + rowOffset) / COLS) * (LON_MAX - LON_MIN);
     const lat = LAT_MAX - ((r + 0.5) / ROWS) * (LAT_MAX - LAT_MIN);
     if (pointInPolygon(lon, lat, BORDER)) {
       DOTS.push(project(lon, lat));
@@ -86,7 +90,7 @@ export default function DotMap({ className = "" }: { className?: string }) {
       {DOTS.map((d, i) => (
         <span
           key={i}
-          className="absolute w-[5px] h-[5px] rounded-full bg-white/15"
+          className="absolute w-2 h-2 rounded-full bg-white/10"
           style={{ top: `${d.y}%`, left: `${d.x}%`, transform: "translate(-50%, -50%)" }}
         />
       ))}
