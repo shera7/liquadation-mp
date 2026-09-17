@@ -51,7 +51,7 @@ export default function LoginForm({ siteName = "Актив.Каталог" }: { 
         aria-hidden
         className="fixed inset-y-0 left-0 z-50 bg-graphite pointer-events-none overflow-hidden"
         style={{
-          width: introOpen ? "5%" : "50%",
+          width: introOpen ? "15%" : "50%",
           transition: "width 900ms cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
@@ -61,7 +61,7 @@ export default function LoginForm({ siteName = "Актив.Каталог" }: { 
         aria-hidden
         className="fixed inset-y-0 right-0 z-50 bg-graphite pointer-events-none overflow-hidden"
         style={{
-          width: introOpen ? "5%" : "50%",
+          width: introOpen ? "15%" : "50%",
           transition: "width 900ms cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
