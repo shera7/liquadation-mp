@@ -83,8 +83,8 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-graphite text-white relative overflow-hidden">
-        <DotMap />
+       <section className="bg-graphite text-white relative overflow-hidden">
+        <DotMap className="right-[-10%] top-[-20%] w-[85%] opacity-80" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 grid lg:grid-cols-[1.2fr_0.8fr] gap-12 items-center">
           <div>
             <span className="inline-block font-mono text-xs tracking-widest text-amber mb-4">
@@ -118,7 +118,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="bg-graphite2/90 backdrop-blur-sm border border-white/10 rounded-sm p-6">
+          <div className="relative bg-graphite2/45 backdrop-blur-md border border-white/10 rounded-sm p-6">
             <div className="font-mono text-xs text-steelLight mb-1">СВОДКА ПО КАТАЛОГУ</div>
             <div className="text-sm text-white/80 mb-4">Имущество по всей Республике Узбекистан</div>
             <div className="grid grid-cols-2 gap-4">
