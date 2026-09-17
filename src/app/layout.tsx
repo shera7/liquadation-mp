@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Archivo, Inter, IBM_Plex_Mono } from "next/font/google";
+import { headers } from "next/headers";
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -47,16 +48,22 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const settings = await getSiteSettings();
+  const pathname = headers().get("x-pathname") ?? "";
+  const isAdmin = pathname.startsWith("/admin");
 
   return (
     <html lang="ru">
       <body className={`${archivo.variable} ${inter.variable} ${plexMono.variable} font-body antialiased`}>
-        <SelectionProvider>
-          <Header siteName={settings.siteName} />
-          <main className="min-h-screen">{children}</main>
-          <Footer />
-          <SelectionBar />
-        </SelectionProvider>
+        {isAdmin ? (
+          children
+        ) : (
+          <SelectionProvider>
+            <Header siteName={settings.siteName} />
+            <main className="min-h-screen">{children}</main>
+            <Footer />
+            <SelectionBar />
+          </SelectionProvider>
+        )}
       </body>
     </html>
   );
