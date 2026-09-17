@@ -118,7 +118,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="relative bg-graphite2/45 backdrop-blur-md border border-white/10 rounded-sm p-6">
+                   <div className="relative bg-graphite2/45 backdrop-blur-md border border-white/10 rounded-sm p-6">
             <div className="font-mono text-xs text-steelLight mb-1">СВОДКА ПО КАТАЛОГУ</div>
             <div className="text-sm text-white/80 mb-4">Имущество по всей Республике Узбекистан</div>
             <div className="grid grid-cols-2 gap-4">
