@@ -8,7 +8,7 @@ interface AddToSelectionButtonProps {
   title: string;
   image: string | null;
   maxQuantity: number;
-  variant?: "icon" | "full";
+  variant?: "icon" | "full" | "card";
 }
 
 export default function AddToSelectionButton({ productId, slug, title, image, maxQuantity, variant = "icon" }: AddToSelectionButtonProps) {
@@ -19,6 +19,34 @@ export default function AddToSelectionButton({ productId, slug, title, image, ma
     e.preventDefault();
     e.stopPropagation();
     toggle({ productId, slug, title, image, maxQuantity });
+  }
+    if (variant === "card") {
+    return (
+      <button
+        onClick={handleClick}
+        className={`w-full flex items-center justify-center gap-1.5 text-sm font-semibold py-2.5 rounded-sm transition-colors ${
+          selected
+            ? "bg-okgreen/10 text-okgreen border border-okgreen"
+            : "bg-amber text-graphite hover:bg-amber-dark"
+        }`}
+      >
+        {selected ? (
+          <>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+            В заявке
+          </>
+        ) : (
+          <>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            В заявку
+          </>
+        )}
+      </button>
+    );
   }
   if (variant === "full") {
     return (
