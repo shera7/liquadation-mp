@@ -51,14 +51,6 @@ export default function ProductCard({ product, usdToUzsRate = null }: ProductCar
           <StatusBadge status={product.status} />
         </div>
 
-        <AddToSelectionButton
-          productId={product.id}
-          slug={product.slug}
-          title={product.title}
-          image={image ?? null}
-          maxQuantity={product.quantity}
-        />
-
         {photoCount > 1 && (
           <span className="absolute bottom-2 right-2 text-[11px] font-medium bg-graphite/80 text-white px-2 py-0.5 rounded-sm flex items-center gap-1">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -92,6 +84,19 @@ export default function ProductCard({ product, usdToUzsRate = null }: ProductCar
           </div>
 
           <div className="mt-2 text-xs text-steel min-h-[1rem]">{product.location || "\u00A0"}</div>
+        </div>
+
+        {/* Кнопка «В заявку» — на всю ширину, в акцентном цвете.
+            Место рядом зарезервировано под будущую кнопку «В Избранное». */}
+        <div className="mt-3">
+          <AddToSelectionButton
+            productId={product.id}
+            slug={product.slug}
+            title={product.title}
+            image={image ?? null}
+            maxQuantity={product.quantity}
+            variant="card"
+          />
         </div>
       </div>
     </Link>
