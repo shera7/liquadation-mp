@@ -1,6 +1,7 @@
 "use client";
 
 import { useSelection } from "@/lib/selection";
+import { flyToCart } from "@/lib/flyToCart";
 
 interface AddToSelectionButtonProps {
   productId: string;
@@ -18,6 +19,7 @@ export default function AddToSelectionButton({ productId, slug, title, image, ma
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+    if (!selected) flyToCart(e.currentTarget as HTMLElement);
     toggle({ productId, slug, title, image, maxQuantity });
   }
     if (variant === "card") {
