@@ -31,7 +31,7 @@ export default function AddToSelectionButton({ productId, slug, title, image, ma
     // а вот счётчик в хедере обновится только когда точка долетит —
     // чтобы кнопка в шапке не "телепортировалась" раньше анимации.
     setPending(true);
-    flyToCart(e.currentTarget as HTMLElement).then(() => {
+    flyToCart(e.currentTarget as HTMLElement, image).then(() => {
       toggle({ productId, slug, title, image, maxQuantity });
       setPending(false);
     });
