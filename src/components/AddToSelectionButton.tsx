@@ -31,11 +31,10 @@ export default function AddToSelectionButton({ productId, slug, title, image, ma
     // так визуально понятно, что именно добавляется. Кнопка в хедере
     // обновится только когда клон долетит, а не одновременно с кликом.
     const card = (e.currentTarget as HTMLElement).closest("a");
-    const photoEl = card?.querySelector("img") as HTMLElement | null;
-    const fromRect = (photoEl ?? (e.currentTarget as HTMLElement)).getBoundingClientRect();
+    const photoEl = card?.querySelector("img") as HTMLImageElement | null;
 
     setPending(true);
-    flyToCart(fromRect, image).then(() => {
+    flyToCart(photoEl, e.currentTarget as HTMLElement).then(() => {
       toggle({ productId, slug, title, image, maxQuantity });
       setPending(false);
     });
