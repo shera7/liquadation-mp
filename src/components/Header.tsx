@@ -1,4 +1,5 @@
 import Link from "next/link";
+import HeaderCta from "./HeaderCta";
 
 export default function Header({ siteName = "Актив.Каталог" }: { siteName?: string }) {
   const dotIndex = siteName.indexOf(".");
