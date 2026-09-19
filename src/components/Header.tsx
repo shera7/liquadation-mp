@@ -8,7 +8,7 @@ export default function Header({ siteName = "Актив.Каталог" }: { sit
 
   return (
     <header className="bg-graphite text-concrete sticky top-0 z-40">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
+           <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
         <Link href="/" className="flex items-center gap-2 shrink-0">
           <span className="font-display font-800 text-lg tracking-tight uppercase">
             {main}
@@ -16,7 +16,7 @@ export default function Header({ siteName = "Актив.Каталог" }: { sit
           </span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6 text-sm text-steelLight">
+        <nav className="hidden md:flex items-center gap-6 text-sm text-steelLight absolute left-1/2 -translate-x-1/2">
           <Link href="/catalog" className="hover:text-white transition-colors">Каталог</Link>
           <Link href="/#how-it-works" className="hover:text-white transition-colors">Как купить</Link>
           <Link href="/#contacts" className="hover:text-white transition-colors">Контакты</Link>
