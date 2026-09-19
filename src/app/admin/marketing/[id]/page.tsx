@@ -32,7 +32,7 @@ export default async function EditMarketingBlockPage({ params }: { params: { id:
       {SLIDE_TYPES.includes(block.type) && (
         <div>
           <h2 className="font-display font-700 text-lg text-graphite mb-3">Слайды</h2>
-          <MarketingSlidesManager blockId={block.id} initialSlides={block.slides as any} />
+          <MarketingSlidesManager blockId={block.id} blockType={block.type} initialSlides={block.slides as any} />
         </div>
       )}
     </div>
