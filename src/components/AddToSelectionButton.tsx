@@ -27,11 +27,15 @@ export default function AddToSelectionButton({ productId, slug, title, image, ma
       return;
     }
 
-    // Сама карточка отзывается сразу (тактильная обратная связь на клик),
-    // а вот счётчик в хедере обновится только когда точка долетит —
-    // чтобы кнопка в шапке не "телепортировалась" раньше анимации.
+    // Летим от реального фото товара в карточке (не от самой кнопки) —
+    // так визуально понятно, что именно добавляется. Кнопка в хедере
+    // обновится только когда клон долетит, а не одновременно с кликом.
+    const card = (e.currentTarget as HTMLElement).closest("a");
+    const photoEl = card?.querySelector("img") as HTMLElement | null;
+    const fromRect = (photoEl ?? (e.currentTarget as HTMLElement)).getBoundingClientRect();
+
     setPending(true);
-    flyToCart(e.currentTarget as HTMLElement, image).then(() => {
+    flyToCart(fromRect, image).then(() => {
       toggle({ productId, slug, title, image, maxQuantity });
       setPending(false);
     });
