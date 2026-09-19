@@ -84,3 +84,12 @@ body {
 .dot-pulse {
   animation: dotPulse 2.6s ease-in-out infinite;
 }
+
+@keyframes cartBump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+.cart-bump {
+  animation: cartBump 300ms ease-out;
+}
