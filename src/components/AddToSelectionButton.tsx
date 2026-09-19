@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useSelection } from "@/lib/selection";
 import { flyToCart } from "@/lib/flyToCart";
 
@@ -14,13 +15,26 @@ interface AddToSelectionButtonProps {
 
 export default function AddToSelectionButton({ productId, slug, title, image, maxQuantity, variant = "icon" }: AddToSelectionButtonProps) {
   const { isSelected, toggle } = useSelection();
-  const selected = isSelected(productId);
+  const [pending, setPending] = useState(false);
+  const selected = isSelected(productId) || pending;
 
   function handleClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    if (!selected) flyToCart(e.currentTarget as HTMLElement);
-    toggle({ productId, slug, title, image, maxQuantity });
+
+    if (isSelected(productId)) {
+      toggle({ productId, slug, title, image, maxQuantity });
+      return;
+    }
+
+    // Сама карточка отзывается сразу (тактильная обратная связь на клик),
+    // а вот счётчик в хедере обновится только когда точка долетит —
+    // чтобы кнопка в шапке не "телепортировалась" раньше анимации.
+    setPending(true);
+    flyToCart(e.currentTarget as HTMLElement).then(() => {
+      toggle({ productId, slug, title, image, maxQuantity });
+      setPending(false);
+    });
   }
     if (variant === "card") {
     return (
