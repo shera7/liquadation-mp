@@ -19,7 +19,7 @@ function ensureKeyframes() {
  * хедере. Настоящий <img>, а не CSS background — без мерцаний/чёрного
  * фона на время загрузки.
  */
-export function flyToCart(fromRect: DOMRect, imageUrl: string | null): Promise<void> {
+export function flyToCart(photoEl: HTMLImageElement | null, fallbackEl: HTMLElement): Promise<void> {
   return new Promise((resolve) => {
     const target = document.getElementById("cart-target");
     if (!target) {
@@ -28,6 +28,8 @@ export function flyToCart(fromRect: DOMRect, imageUrl: string | null): Promise<v
     }
     ensureKeyframes();
 
+    const sourceEl = photoEl ?? fallbackEl;
+    const fromRect = sourceEl.getBoundingClientRect();
     const toRect = target.getBoundingClientRect();
     const startW = fromRect.width;
     const startH = fromRect.height;
@@ -59,14 +61,15 @@ export function flyToCart(fromRect: DOMRect, imageUrl: string | null): Promise<v
     ghost.style.setProperty("--scale", `${scale}`);
     ghost.style.animation = "flyToCartArc 450ms cubic-bezier(0.4, 0, 0.2, 1) forwards";
 
-    if (imageUrl) {
-      const img = document.createElement("img");
-      img.src = imageUrl;
-      img.style.width = "100%";
-      img.style.height = "100%";
-      img.style.objectFit = "cover";
-      img.style.display = "block";
-      ghost.appendChild(img);
+    if (photoEl) {
+      // Клонируем уже загруженный <img> из карточки (тот, что оптимизирован
+      // и закэширован через next/image) — новый сетевой запрос не нужен.
+      const clone = photoEl.cloneNode() as HTMLImageElement;
+      clone.style.width = "100%";
+      clone.style.height = "100%";
+      clone.style.objectFit = "cover";
+      clone.style.display = "block";
+      ghost.appendChild(clone);
     } else {
       ghost.style.background = "#E8A33D";
     }
