@@ -22,12 +22,7 @@ export default function Header({ siteName = "Актив.Каталог" }: { sit
           <Link href="/#contacts" className="hover:text-white transition-colors">Контакты</Link>
         </nav>
 
-        <Link
-          href="/#quick-request"
-          className="shrink-0 inline-flex items-center rounded-sm bg-amber px-4 py-2 text-sm font-semibold text-graphite hover:bg-amber-dark transition-colors"
-        >
-          Оставить заявку
-        </Link>
+        <HeaderCta />
       </div>
     </header>
   );
