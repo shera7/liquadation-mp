@@ -6,14 +6,13 @@ import NdaGate from "./NdaGate";
 interface RequestFormProps {
   productId: string;
   productTitle: string;
-  mode?: "request" | "price" | "question";
+  mode?: "request" | "price";
   availableQuantity?: number;
 }
 
 const MODE_LABELS: Record<string, string> = {
   request: "Оставить заявку",
   price: "Запросить цену",
-  question: "Задать вопрос",
 };
 
 interface StoredNda {
