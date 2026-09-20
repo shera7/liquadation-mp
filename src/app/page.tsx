@@ -84,7 +84,7 @@ export default async function HomePage() {
     <div>
       {/* Hero */}
             <section className="bg-graphite text-white relative overflow-hidden">
-        <DotMap className="right-[-10%] top-[-20%] w-[85%] opacity-80" />
+        <DotMap className="hidden lg:block right-[-10%] top-[-20%] w-[85%] opacity-80" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 grid lg:grid-cols-[1.2fr_0.8fr] gap-12 items-center">
           <div>
             <span className="inline-block font-mono text-xs tracking-widest text-amber mb-4">
