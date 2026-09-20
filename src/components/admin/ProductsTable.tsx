@@ -163,8 +163,8 @@ export default function ProductsTable({
         </div>
       </div>
 
-      <div className="bg-white border border-line rounded-sm overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-white border border-line rounded-sm overflow-x-auto">
+        <table className="w-full min-w-[720px] text-sm">
           <thead className="bg-concrete text-steel text-left">
             <tr>
               <th className="px-4 py-3 w-8">
