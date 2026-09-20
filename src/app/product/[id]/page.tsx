@@ -241,7 +241,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.priceOnRequest && (
                   <RequestForm productId={product.id} productTitle={product.title} mode="price" />
                 )}
-                <RequestForm productId={product.id} productTitle={product.title} mode="question" />
                 <AddToSelectionButton
                   productId={product.id}
                   slug={product.slug}
