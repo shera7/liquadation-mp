@@ -177,7 +177,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
 
         <div>
-          <div className="border border-line rounded-sm bg-white p-6 sticky top-24">
+          <div className="border border-line rounded-sm bg-white p-6 static lg:sticky lg:top-24">
             <div className="tag-perforation -mx-6 -mt-6 mb-4" />
             <div className="flex items-center justify-between mb-2">
               <span className="font-mono text-xs text-steel">№{product.inventoryNumber}</span>
