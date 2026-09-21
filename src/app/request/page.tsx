@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSelection } from "@/lib/selection";
 import NdaGate from "@/components/NdaGate";
+import { getAttribution } from "@/lib/attribution";
+import { trackLeadConversion } from "@/lib/trackConversion";
 
 interface StoredNda {
   acceptanceId: string;
@@ -66,6 +68,7 @@ export default function RequestCartPage() {
     setStatus("loading");
     setErrorMsg(null);
     const form = new FormData(e.currentTarget);
+    const eventId = crypto.randomUUID();
 
     try {
       const res = await fetch("/api/requests/cart", {
@@ -87,6 +90,8 @@ export default function RequestCartPage() {
           contactMethod: form.get("contactMethod"),
           comment: form.get("comment"),
           ndaAcceptanceId: ndaData?.acceptanceId,
+          eventId,
+          ...getAttribution(),
         }),
       });
 
@@ -103,6 +108,7 @@ export default function RequestCartPage() {
         return;
       }
 
+      trackLeadConversion(eventId);
       clear();
       setStage("success");
     } catch {
