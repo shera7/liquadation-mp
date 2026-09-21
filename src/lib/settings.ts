@@ -29,6 +29,12 @@ export async function getSiteSettings() {
       usdToUzsUpdatedAt: null,
       currencyRateSource: "auto",
       ndaMinPriceUsd: null,
+      ga4MeasurementId: null,
+      googleAdsConversionId: null,
+      googleAdsConversionLabel: null,
+      metaPixelId: null,
+      metaConversionsApiToken: null,
+      metaTestEventCode: null,
     }
   );
 }
@@ -51,6 +57,12 @@ export async function upsertSiteSettings(data: {
   ogImageUrl?: string | null;
   currencyRateSource?: string;
   ndaMinPriceUsd?: number | null;
+  ga4MeasurementId?: string | null;
+  googleAdsConversionId?: string | null;
+  googleAdsConversionLabel?: string | null;
+  metaPixelId?: string | null;
+  metaConversionsApiToken?: string | null;
+  metaTestEventCode?: string | null;
 }) {
   return prisma.siteSettings.upsert({
     where: { id: SETTINGS_ID },
