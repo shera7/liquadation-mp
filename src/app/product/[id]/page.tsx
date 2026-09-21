@@ -9,6 +9,7 @@ import RequestForm from "@/components/RequestForm";
 import ProductGallery from "@/components/ProductGallery";
 import StatusBadge from "@/components/StatusBadge";
 import AddToSelectionButton from "@/components/AddToSelectionButton";
+import ProductViewTracker from "@/components/ProductViewTracker";
 
 export const dynamic = "force-dynamic";
 
@@ -88,6 +89,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <ProductViewTracker
+        id={product.id}
+        title={product.title}
+        price={product.price === null ? null : Number(product.price)}
+        currency={product.currency}
       />
       <nav className="text-xs text-steel mb-6 flex items-center gap-1.5 flex-wrap">
         <Link href="/catalog" className="hover:text-amber-dark">
