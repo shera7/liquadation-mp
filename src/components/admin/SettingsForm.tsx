@@ -30,6 +30,12 @@ interface SettingsFormProps {
     metaDescription: string | null;
     ogImageUrl: string | null;
     managerWebhookSecret: string | null;
+    ga4MeasurementId: string | null;
+    googleAdsConversionId: string | null;
+    googleAdsConversionLabel: string | null;
+    metaPixelId: string | null;
+    metaConversionsApiToken: string | null;
+    metaTestEventCode: string | null;
   };
 }
 
@@ -165,6 +171,16 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       currencyRateSource: rateSource,
       ...(rateSource === "manual" ? { usdToUzsRate: Number(manualRate) || null } : {}),
       managerWebhookSecret: form.get("managerWebhookSecret") || null,
+      ga4MeasurementId: form.get("ga4MeasurementId") || null,
+      googleAdsConversionId: form.get("googleAdsConversionId") || null,
+      googleAdsConversionLabel: form.get("googleAdsConversionLabel") || null,
+      metaPixelId: form.get("metaPixelId") || null,
+      // Секретный токен: не затираем существующий, если поле оставили
+      // пустым при повторном сохранении формы.
+      ...(form.get("metaConversionsApiToken")
+        ? { metaConversionsApiToken: form.get("metaConversionsApiToken") }
+        : {}),
+      metaTestEventCode: form.get("metaTestEventCode") || null,
     };
 
     const res = await fetch("/api/admin/settings", {
@@ -381,6 +397,65 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
             className="input"
           />
         </Field>
+      </div>
+
+      <div className="bg-white border border-line rounded-sm p-6 space-y-4">
+        <div>
+          <h2 className="font-display font-700 text-graphite">Реклама и аналитика</h2>
+          <p className="text-xs text-steel mt-1">
+            Конверсией считается отправленная заявка (по товару или на несколько товаров сразу).
+            Просмотр карточки товара тоже отслеживается автоматически — пригодится для ремаркетинга.
+          </p>
+        </div>
+
+        <div className="border-t border-line pt-4">
+          <div className="text-sm font-semibold text-graphite mb-1">Google — GA4 и Google Ads</div>
+          <p className="text-xs text-steel mb-3">
+            ID измерения GA4: Google Analytics → Администратор → Потоки данных → выберите поток → вверху страницы.
+            Начинается с «G-». Conversion ID и метка: Google Ads → Цели → Конверсии → откройте действие-конверсию
+            «заявка» → раздел «Тег» → «Настроить вручную» — там будут оба значения (AW-XXXXXXXXX и текст после слэша).
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="GA4 Measurement ID">
+              <input name="ga4MeasurementId" defaultValue={settings.ga4MeasurementId ?? ""} placeholder="G-XXXXXXXXXX" className="input" />
+            </Field>
+            <Field label="Google Ads Conversion ID">
+              <input name="googleAdsConversionId" defaultValue={settings.googleAdsConversionId ?? ""} placeholder="AW-XXXXXXXXX" className="input" />
+            </Field>
+            <Field label="Google Ads Conversion Label">
+              <input name="googleAdsConversionLabel" defaultValue={settings.googleAdsConversionLabel ?? ""} placeholder="AbC-D1efGhIjKLmnOp" className="input" />
+            </Field>
+          </div>
+        </div>
+
+        <div className="border-t border-line pt-4">
+          <div className="text-sm font-semibold text-graphite mb-1">Meta (Facebook / Instagram)</div>
+          <p className="text-xs text-steel mb-3">
+            ID пикселя: Meta Business Suite → Events Manager → выберите источник данных → ID указан вверху страницы.
+            Токен Conversions API: там же → «Настройки» → «Conversions API» → «Сгенерировать токен доступа»
+            (это секрет, храните так же, как пароль — важен для доставки событий, которые блокирует браузер).
+            Код тестового события — необязателен, нужен только чтобы проверить события во вкладке «Тестовые события»
+            перед запуском рекламы.
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Meta Pixel ID">
+              <input name="metaPixelId" defaultValue={settings.metaPixelId ?? ""} placeholder="1234567890123456" className="input" />
+            </Field>
+            <Field label="Meta Test Event Code (необязательно)">
+              <input name="metaTestEventCode" defaultValue={settings.metaTestEventCode ?? ""} placeholder="TEST12345" className="input" />
+            </Field>
+          </div>
+          <div className="mt-3">
+            <Field label="Meta Conversions API — токен доступа">
+              <input
+                name="metaConversionsApiToken"
+                type="password"
+                placeholder={settings.metaConversionsApiToken ? "Токен сохранён — оставьте пустым, чтобы не менять" : "Вставьте токен из Events Manager"}
+                className="input"
+              />
+            </Field>
+          </div>
+        </div>
       </div>
 
       {error && <div className="text-alert text-sm">{error}</div>}
