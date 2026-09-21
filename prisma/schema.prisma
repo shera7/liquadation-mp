@@ -147,6 +147,14 @@ model Request {
   requestNumber   String?  @unique
   groupId         String?  // объединяет заявки, оформленные одним запросом на несколько товаров сразу
   customerId      String?  // задел под будущий личный кабинет клиента — пока не используется
+  // ---------- Атрибуция трафика (для Google Ads / Meta Ads) ----------
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  utmContent      String?
+  utmTerm         String?
+  gclid           String?  // Google Click ID
+  fbclid          String?  // Facebook Click ID
   assigneeId      String?
   assigneeName    String?
   statusChangedAt DateTime @default(now())
@@ -228,6 +236,13 @@ model SiteSettings {
   currencyRateSource String    @default("auto")
   ndaMinPriceUsd Decimal? @db.Decimal(14, 2)
   managerWebhookSecret String?
+  // ---------- Реклама и аналитика ----------
+  ga4MeasurementId          String? // G-XXXXXXXXXX
+  googleAdsConversionId     String? // AW-XXXXXXXXX
+  googleAdsConversionLabel  String? // метка конверсии "заявка отправлена"
+  metaPixelId               String? // ID пикселя Meta (Facebook/Instagram)
+  metaConversionsApiToken   String? // серверный токен Conversions API — секрет, не показывается повторно в форме
+  metaTestEventCode         String? // код тестового события Meta (для проверки в Events Manager, необязательно)
 }
 
 enum NdaDocumentStatus {
