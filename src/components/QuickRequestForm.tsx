@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { getAttribution } from "@/lib/attribution";
+import { trackLeadConversion } from "@/lib/trackConversion";
 
 export default function QuickRequestForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
@@ -10,6 +12,7 @@ export default function QuickRequestForm() {
     e.preventDefault();
     setStatus("loading");
     const form = new FormData(e.currentTarget);
+    const eventId = crypto.randomUUID();
 
     try {
       const res = await fetch("/api/requests", {
@@ -26,9 +29,12 @@ export default function QuickRequestForm() {
           comment: form.get("comment"),
           website: form.get("website"),
           formLoadedAt,
+          eventId,
+          ...getAttribution(),
         }),
       });
       if (!res.ok) throw new Error("failed");
+      trackLeadConversion(eventId);
       setStatus("success");
       (e.target as HTMLFormElement).reset();
     } catch {
