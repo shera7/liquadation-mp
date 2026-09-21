@@ -6,6 +6,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getSiteSettings } from "@/lib/settings";
 import { SelectionProvider } from "@/lib/selection";
+import AnalyticsScripts from "@/components/AnalyticsScripts";
+import AttributionCapture from "@/components/AttributionCapture";
 
 export const dynamic = "force-dynamic";
 
@@ -61,6 +63,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           children
         ) : (
           <SelectionProvider>
+            <AnalyticsScripts
+              ga4MeasurementId={settings.ga4MeasurementId}
+              googleAdsConversionId={settings.googleAdsConversionId}
+              googleAdsConversionLabel={settings.googleAdsConversionLabel}
+              metaPixelId={settings.metaPixelId}
+            />
+            <AttributionCapture />
             <Header siteName={settings.siteName} />
             <main className="min-h-screen">{children}</main>
             <Footer />
