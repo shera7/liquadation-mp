@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import NdaGate from "./NdaGate";
+import { getAttribution } from "@/lib/attribution";
+import { trackLeadConversion } from "@/lib/trackConversion";
 
 interface RequestFormProps {
   productId: string;
@@ -83,6 +85,7 @@ export default function RequestForm({ productId, productTitle, mode = "request",
     e.preventDefault();
     setStatus("loading");
     const form = new FormData(e.currentTarget);
+    const eventId = crypto.randomUUID();
 
     try {
       const res = await fetch("/api/requests", {
@@ -107,6 +110,8 @@ export default function RequestForm({ productId, productTitle, mode = "request",
           formLoadedAt,
           ndaAcceptanceId: ndaData?.acceptanceId,
           ndaTelegramId: ndaData?.telegramId,
+          eventId,
+          ...getAttribution(),
         }),
       });
 
@@ -122,6 +127,7 @@ export default function RequestForm({ productId, productTitle, mode = "request",
         return;
       }
 
+      trackLeadConversion(eventId);
       setStatus("success");
     } catch {
       setStatus("error");
