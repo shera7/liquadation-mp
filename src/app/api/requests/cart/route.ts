@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { notifyManagerNewCartRequest } from "@/lib/telegram";
 import { waitUntil } from "@vercel/functions";
+import { sendMetaLeadEvent } from "@/lib/metaCapi";
 
 const cartSchema = z.object({
   items: z
@@ -24,6 +25,14 @@ const cartSchema = z.object({
   contactMethod: z.string().optional(),
   comment: z.string().optional(),
   ndaAcceptanceId: z.string().optional(),
+  eventId: z.string().optional(),
+  utmSource: z.string().optional(),
+  utmMedium: z.string().optional(),
+  utmCampaign: z.string().optional(),
+  utmContent: z.string().optional(),
+  utmTerm: z.string().optional(),
+  gclid: z.string().optional(),
+  fbclid: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -75,6 +84,13 @@ export async function POST(req: NextRequest) {
           comment: data.comment,
           ip,
           ndaAcceptanceId: data.ndaAcceptanceId,
+          utmSource: data.utmSource,
+          utmMedium: data.utmMedium,
+          utmCampaign: data.utmCampaign,
+          utmContent: data.utmContent,
+          utmTerm: data.utmTerm,
+          gclid: data.gclid,
+          fbclid: data.fbclid,
         },
       })
     )
@@ -95,6 +111,18 @@ export async function POST(req: NextRequest) {
   waitUntil(
     (async () => {
       try {
+        if (data.eventId) {
+          await sendMetaLeadEvent({
+            eventId: data.eventId,
+            eventSourceUrl: req.headers.get("referer") || req.nextUrl.origin,
+            clientIp: ip,
+            userAgent: req.headers.get("user-agent"),
+            email: data.email || null,
+            phone: data.phone,
+            fbclid: data.fbclid || null,
+          });
+        }
+
         const items = data.items.map((item) => {
           const product = productById.get(item.productId);
           return {
