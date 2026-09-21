@@ -8,6 +8,7 @@ import { getSiteSettings } from "@/lib/settings";
 import { getEffectiveUsdRate } from "@/lib/exchangeRate";
 import { isNdaRequiredForProduct } from "@/lib/nda";
 import { waitUntil } from "@vercel/functions";
+import { sendMetaLeadEvent } from "@/lib/metaCapi";
 
 const requestSchema = z.object({
   type: z.enum(["PRODUCT", "GENERAL"]),
@@ -31,6 +32,14 @@ const requestSchema = z.object({
   formLoadedAt: z.number().optional(),
   ndaAcceptanceId: z.string().optional(),
   ndaTelegramId: z.string().optional(),
+  eventId: z.string().optional(),
+  utmSource: z.string().optional(),
+  utmMedium: z.string().optional(),
+  utmCampaign: z.string().optional(),
+  utmContent: z.string().optional(),
+  utmTerm: z.string().optional(),
+  gclid: z.string().optional(),
+  fbclid: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -173,6 +182,13 @@ export async function POST(req: NextRequest) {
       comment: data.comment,
       ip,
       ndaAcceptanceId: data.ndaAcceptanceId,
+      utmSource: data.utmSource,
+      utmMedium: data.utmMedium,
+      utmCampaign: data.utmCampaign,
+      utmContent: data.utmContent,
+      utmTerm: data.utmTerm,
+      gclid: data.gclid,
+      fbclid: data.fbclid,
     },
   });
   
@@ -186,6 +202,20 @@ export async function POST(req: NextRequest) {
   waitUntil(
     (async () => {
       try {
+        // Серверное событие "Lead" в Meta Conversions API — с тем же eventId,
+        // что и браузерное событие пикселя, для дедупликации на стороне Meta.
+        if (data.eventId) {
+          await sendMetaLeadEvent({
+            eventId: data.eventId,
+            eventSourceUrl: req.headers.get("referer") || req.nextUrl.origin,
+            clientIp: ip,
+            userAgent: req.headers.get("user-agent"),
+            email: data.email || null,
+            phone: data.phone,
+            fbclid: data.fbclid || null,
+          });
+        }
+
         let productTitle: string | undefined;
         let price: string | undefined;
         let productUrl: string | undefined;
