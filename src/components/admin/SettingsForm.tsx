@@ -211,7 +211,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex gap-1 border-b border-line overflow-x-auto">
+      <div className="flex gap-1 border-b border-line ">
         {TABS.map((t) => (
           <button
             key={t.id}
