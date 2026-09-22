@@ -36,6 +36,9 @@ interface SettingsFormProps {
     metaPixelId: string | null;
     metaConversionsApiToken: string | null;
     metaTestEventCode: string | null;
+    usdToUzsRate: number | null;
+    usdToUzsRateDate: string | null;
+    currencyRateSource: string;
   };
 }
 
@@ -62,11 +65,13 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const [uploadingOg, setUploadingOg] = useState(false);
 
-  const [rateSource, setRateSource] = useState("auto");
-  const [manualRate, setManualRate] = useState("");
+  const [rateSource, setRateSource] = useState(settings.currencyRateSource ?? "auto");
+  const [manualRate, setManualRate] = useState(
+    settings.currencyRateSource === "manual" && settings.usdToUzsRate !== null ? String(settings.usdToUzsRate) : ""
+  );
   const [refreshingRate, setRefreshingRate] = useState(false);
-  const [currentRate, setCurrentRate] = useState<number | null>(null);
-  const [rateDate, setRateDate] = useState<string | null>(null);
+  const [currentRate, setCurrentRate] = useState<number | null>(settings.usdToUzsRate);
+  const [rateDate, setRateDate] = useState<string | null>(settings.usdToUzsRateDate);
 
   const [recipients, setRecipients] = useState<Recipient[]>([]);
   const [recipientsLoading, setRecipientsLoading] = useState(true);
@@ -83,6 +88,13 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
       });
   }, []);
 
+  // После сохранения (router.refresh()) сервер пришлёт свежие settings —
+  // синхронизируем локальное отображение курса с ними.
+  useEffect(() => {
+    setCurrentRate(settings.usdToUzsRate);
+    setRateDate(settings.usdToUzsRateDate);
+  }, [settings.usdToUzsRate, settings.usdToUzsRateDate]);
+  
   async function handleAddRecipient(e: React.FormEvent) {
     e.preventDefault();
     if (!newChatId.trim()) return;
@@ -211,21 +223,34 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex gap-1 border-b border-line ">
-        {TABS.map((t) => (
+      <div className="flex items-center justify-between gap-4 border-b border-line">
+        <div className="flex gap-1 overflow-x-auto">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTab(t.id)}
+              className={`shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                tab === t.id
+                  ? "border-amber text-graphite"
+                  : "border-transparent text-steel hover:text-graphite"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          {saved && <span className="text-okgreen text-xs">Сохранено</span>}
+          {error && <span className="text-alert text-xs">{error}</span>}
           <button
-            key={t.id}
-            type="button"
-            onClick={() => setTab(t.id)}
-            className={`shrink-0 px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
-              tab === t.id
-                ? "border-amber text-graphite"
-                : "border-transparent text-steel hover:text-graphite"
-            }`}
+            type="submit"
+            disabled={loading}
+            className="bg-amber text-graphite font-semibold px-4 py-2 rounded-sm text-sm hover:bg-amber-dark disabled:opacity-60"
           >
-            {t.label}
+            {loading ? "Сохранение..." : "Сохранить"}
           </button>
-        ))}
+        </div>
       </div>
 
       <div className={tab === "general" ? "block" : "hidden"}>
