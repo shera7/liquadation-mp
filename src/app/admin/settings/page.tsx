@@ -13,10 +13,18 @@ export default async function AdminSettingsPage() {
 
   const settings = await getSiteSettings();
 
+  // Decimal (Prisma) нельзя напрямую передать в клиентский компонент —
+  // превращаем в обычное число здесь, на сервере.
+  const settingsForForm = {
+    ...settings,
+    usdToUzsRate: settings.usdToUzsRate !== null && settings.usdToUzsRate !== undefined ? Number(settings.usdToUzsRate) : null,
+    ndaMinPriceUsd: settings.ndaMinPriceUsd !== null && settings.ndaMinPriceUsd !== undefined ? Number(settings.ndaMinPriceUsd) : null,
+  };
+
   return (
     <div className="max-w-xl">
       <h1 className="font-display font-800 text-2xl text-graphite mb-6">Настройки сайта</h1>
-      <SettingsForm settings={settings as any} />
+      <SettingsForm settings={settingsForForm as any} />
     </div>
   );
 }
