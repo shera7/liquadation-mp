@@ -240,17 +240,6 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-3 shrink-0">
-          {saved && <span className="text-okgreen text-xs">Сохранено</span>}
-          {error && <span className="text-alert text-xs">{error}</span>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-amber text-graphite font-semibold px-4 py-2 rounded-sm text-sm hover:bg-amber-dark disabled:opacity-60"
-          >
-            {loading ? "Сохранение..." : "Сохранить"}
-          </button>
-        </div>
       </div>
 
       <div className={tab === "general" ? "block" : "hidden"}>
