@@ -11,6 +11,7 @@ export interface SelectedItem {
   maxQuantity: number;
   desiredPrice?: string;
   desiredPriceCurrency?: "USD" | "UZS";
+  paymentTermId?: string;
 }
 
 interface SelectionContextValue {
@@ -19,6 +20,7 @@ interface SelectionContextValue {
   toggle: (item: Omit<SelectedItem, "quantity">) => void;
   setQuantity: (productId: string, quantity: number) => void;
   setDesiredPrice: (productId: string, price: string, currency: "USD" | "UZS") => void;
+  setPaymentTerm: (productId: string, paymentTermId: string) => void;
   remove: (productId: string) => void;
   clear: () => void;
 }
@@ -68,6 +70,10 @@ export function SelectionProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => prev.map((i) => (i.productId === productId ? { ...i, desiredPrice, desiredPriceCurrency } : i)));
   }, []);
 
+  const setPaymentTerm = useCallback((productId: string, paymentTermId: string) => {
+    setItems((prev) => prev.map((i) => (i.productId === productId ? { ...i, paymentTermId } : i)));
+  }, []);
+
   const remove = useCallback((productId: string) => {
     setItems((prev) => prev.filter((i) => i.productId !== productId));
   }, []);
@@ -75,7 +81,7 @@ export function SelectionProvider({ children }: { children: React.ReactNode }) {
   const clear = useCallback(() => setItems([]), []);
 
   return (
-    <SelectionContext.Provider value={{ items, isSelected, toggle, setQuantity, setDesiredPrice, remove, clear }}>
+    <SelectionContext.Provider value={{ items, isSelected, toggle, setQuantity, setDesiredPrice, setPaymentTerm, remove, clear }}>
       {children}
     </SelectionContext.Provider>
   );
