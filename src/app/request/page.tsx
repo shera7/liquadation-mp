@@ -14,13 +14,20 @@ interface StoredNda {
   telegramUsername?: string | null;
 }
 
+interface PaymentTerm {
+  id: string;
+  label: string;
+}
+
 export default function RequestCartPage() {
-  const { items, setQuantity, setDesiredPrice, remove, clear } = useSelection();
+  const { items, setQuantity, setDesiredPrice, setPaymentTerm, remove, clear } = useSelection();
   const [stage, setStage] = useState<"review" | "nda" | "form" | "success">("review");
   const [ndaRequired, setNdaRequired] = useState(false);
   const [ndaData, setNdaData] = useState<StoredNda | null>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [paymentTermsByProduct, setPaymentTermsByProduct] = useState<Record<string, PaymentTerm[]>>({});
+  const [invalidItemIds, setInvalidItemIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (items.length === 0) return;
@@ -34,7 +41,38 @@ export default function RequestCartPage() {
     ).then((results) => setNdaRequired(results.some(Boolean)));
   }, [items]);
 
+  useEffect(() => {
+    if (items.length === 0) return;
+    Promise.all(
+      items.map((i) =>
+        fetch(`/api/payment-terms?productId=${i.productId}`)
+          .then((r) => r.json())
+          .then((terms) => [i.productId, Array.isArray(terms) ? terms : []] as const)
+          .catch(() => [i.productId, []] as const)
+      )
+    ).then((pairs) => setPaymentTermsByProduct(Object.fromEntries(pairs)));
+  }, [items.length]);
+
+  function validateItems(): boolean {
+    const invalid: string[] = [];
+    for (const item of items) {
+      const hasPrice = Boolean(item.desiredPrice && item.desiredPrice.trim());
+      const availableTerms = paymentTermsByProduct[item.productId] ?? [];
+      const needsTerm = availableTerms.length > 0;
+      const hasTerm = !needsTerm || Boolean(item.paymentTermId);
+      if (!hasPrice || !hasTerm) invalid.push(item.productId);
+    }
+    setInvalidItemIds(invalid);
+    return invalid.length === 0;
+  }
+
   async function handleProceed() {
+    if (!validateItems()) {
+      setErrorMsg("Заполните желаемую цену и условия оплаты по каждому товару, отмеченному красным.");
+      return;
+    }
+    setErrorMsg(null);
+
     if (!ndaRequired) {
       setStage("form");
       return;
@@ -65,6 +103,12 @@ export default function RequestCartPage() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (!validateItems()) {
+      setStage("review");
+      setErrorMsg("Заполните желаемую цену и условия оплаты по каждому товару, отмеченному красным.");
+      return;
+    }
+
     setStatus("loading");
     setErrorMsg(null);
     const form = new FormData(e.currentTarget);
@@ -78,8 +122,9 @@ export default function RequestCartPage() {
           items: items.map((i) => ({
             productId: i.productId,
             quantity: i.quantity,
-            desiredPrice: i.desiredPrice || undefined,
+            desiredPrice: i.desiredPrice,
             desiredPriceCurrency: i.desiredPriceCurrency,
+            paymentTermId: i.paymentTermId || undefined,
           })),
           name: form.get("name"),
           company: form.get("company"),
@@ -148,62 +193,94 @@ export default function RequestCartPage() {
       <h1 className="font-display font-800 text-2xl text-graphite mb-6">Заявка на {items.length} товаров</h1>
 
       <div className="space-y-3 mb-8">
-        {items.map((item) => (
-          <div key={item.productId} className="bg-white border border-line rounded-sm p-3 space-y-2">
-            <div className="flex items-center gap-4">
-              <div className="relative w-16 h-16 shrink-0 rounded-sm overflow-hidden bg-concrete">
-                {item.image && <Image src={item.image} alt={item.title} fill className="object-cover" />}
-              </div>
-              <Link href={`/product/${item.slug}`} className="flex-1 text-sm text-graphite hover:text-amber-dark">
-                {item.title}
-                <div className="text-[11px] text-steel font-normal">В наличии: {item.maxQuantity} шт.</div>
-              </Link>
-              <div className="flex items-center gap-1.5">
+        {items.map((item) => {
+          const isInvalid = invalidItemIds.includes(item.productId);
+          const availableTerms = paymentTermsByProduct[item.productId] ?? [];
+          return (
+            <div
+              key={item.productId}
+              className={`bg-white border rounded-sm p-3 space-y-2 ${isInvalid ? "border-alert" : "border-line"}`}
+            >
+              <div className="flex items-center gap-4">
+                <div className="relative w-16 h-16 shrink-0 rounded-sm overflow-hidden bg-concrete">
+                  {item.image && <Image src={item.image} alt={item.title} fill className="object-cover" />}
+                </div>
+                <Link href={`/product/${item.slug}`} className="flex-1 text-sm text-graphite hover:text-amber-dark">
+                  {item.title}
+                  <div className="text-[11px] text-steel font-normal">В наличии: {item.maxQuantity} шт.</div>
+                </Link>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity(item.productId, item.quantity - 1)}
+                    className="w-7 h-7 border border-line rounded-sm text-steel hover:border-amber"
+                  >
+                    −
+                  </button>
+                  <span className="w-8 text-center text-sm font-mono-tabular">{item.quantity}</span>
+                  <button
+                    type="button"
+                    onClick={() => setQuantity(item.productId, item.quantity + 1)}
+                    disabled={item.quantity >= item.maxQuantity}
+                    className="w-7 h-7 border border-line rounded-sm text-steel hover:border-amber disabled:opacity-30 disabled:hover:border-line"
+                  >
+                    +
+                  </button>
+                </div>
                 <button
                   type="button"
-                  onClick={() => setQuantity(item.productId, item.quantity - 1)}
-                  className="w-7 h-7 border border-line rounded-sm text-steel hover:border-amber"
+                  onClick={() => remove(item.productId)}
+                  className="text-xs text-alert hover:underline"
                 >
-                  −
-                </button>
-                <span className="w-8 text-center text-sm font-mono-tabular">{item.quantity}</span>
-                <button
-                  type="button"
-                  onClick={() => setQuantity(item.productId, item.quantity + 1)}
-                  disabled={item.quantity >= item.maxQuantity}
-                  className="w-7 h-7 border border-line rounded-sm text-steel hover:border-amber disabled:opacity-30 disabled:hover:border-line"
-                >
-                  +
+                  Убрать
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={() => remove(item.productId)}
-                className="text-xs text-alert hover:underline"
-              >
-                Убрать
-              </button>
-            </div>
 
-            <div className="grid grid-cols-[7fr_3fr] gap-2 pl-20">
-              <input
-                placeholder="Желаемая цена (необязательно)"
-                defaultValue={item.desiredPrice ?? ""}
-                onBlur={(e) => setDesiredPrice(item.productId, e.target.value, item.desiredPriceCurrency ?? "USD")}
-                className="border border-line rounded-sm px-2 py-1.5 text-sm"
-              />
-              <select
-                value={item.desiredPriceCurrency ?? "USD"}
-                onChange={(e) => setDesiredPrice(item.productId, item.desiredPrice ?? "", e.target.value as "USD" | "UZS")}
-                className="border border-line rounded-sm px-2 py-1.5 text-sm"
-              >
-                <option value="USD">USD</option>
-                <option value="UZS">UZS</option>
-              </select>
+              <div className="pl-20 space-y-2">
+                <div>
+                  <label className="block text-[11px] text-steel mb-1">Желаемая цена *</label>
+                  <div className="grid grid-cols-[7fr_3fr] gap-2">
+                    <input
+                      placeholder="Например, 1200"
+                      defaultValue={item.desiredPrice ?? ""}
+                      onBlur={(e) => setDesiredPrice(item.productId, e.target.value, item.desiredPriceCurrency ?? "USD")}
+                      className={`border rounded-sm px-2 py-1.5 text-sm ${isInvalid && !item.desiredPrice ? "border-alert" : "border-line"}`}
+                    />
+                    <select
+                      value={item.desiredPriceCurrency ?? "USD"}
+                      onChange={(e) => setDesiredPrice(item.productId, item.desiredPrice ?? "", e.target.value as "USD" | "UZS")}
+                      className="border border-line rounded-sm px-2 py-1.5 text-sm"
+                    >
+                      <option value="USD">USD</option>
+                      <option value="UZS">UZS</option>
+                    </select>
+                  </div>
+                </div>
+
+                {availableTerms.length > 0 && (
+                  <div>
+                    <label className="block text-[11px] text-steel mb-1">Условия оплаты *</label>
+                    <select
+                      value={item.paymentTermId ?? ""}
+                      onChange={(e) => setPaymentTerm(item.productId, e.target.value)}
+                      className={`w-full border rounded-sm px-2 py-1.5 text-sm ${isInvalid && !item.paymentTermId ? "border-alert" : "border-line"}`}
+                    >
+                      <option value="">Выберите условия оплаты…</option>
+                      {availableTerms.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
+      {errorMsg && stage !== "form" && <div className="text-alert text-sm mb-4">{errorMsg}</div>}
 
       {stage === "review" && (
         <button
