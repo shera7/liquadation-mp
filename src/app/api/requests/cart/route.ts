@@ -11,11 +11,12 @@ const cartSchema = z.object({
       z.object({
         productId: z.string(),
         quantity: z.number().int().positive().default(1),
-        desiredPrice: z.string().optional(),
+        desiredPrice: z.string().min(1, "Укажите желаемую цену"),
         desiredPriceCurrency: z.enum(["USD", "UZS"]).optional(),
+        paymentTermId: z.string().optional(),
       })
     )
-    .min(1, "Список товаров пуст"),
+  .min(1, "Список товаров пуст"),
   name: z.string().min(1, "Укажите имя"),
   company: z.string().min(1, "Укажите название компании"),
   companyInn: z.string().min(5, "Укажите ИНН или ПИНФЛ"),
@@ -50,6 +51,14 @@ export async function POST(req: NextRequest) {
   });
   const productById = new Map(products.map((p) => [p.id, p]));
 
+  // Подписи условий оплаты — снимок на момент заявки (не ссылка "вживую",
+  // на случай если условие потом переименуют/удалят в админке).
+  const paymentTermIds = [...new Set(data.items.map((i) => i.paymentTermId).filter(Boolean))] as string[];
+  const paymentTerms = paymentTermIds.length
+    ? await prisma.paymentTerm.findMany({ where: { id: { in: paymentTermIds } } })
+    : [];
+  const paymentTermById = new Map(paymentTerms.map((t) => [t.id, t.label]));
+
   // Количество ни по одной позиции не может превышать реальный остаток на складе
   for (const item of data.items) {
     const product = productById.get(item.productId);
@@ -74,6 +83,8 @@ export async function POST(req: NextRequest) {
           quantity: item.quantity,
           desiredPrice: item.desiredPrice || undefined,
           desiredPriceCurrency: item.desiredPrice ? item.desiredPriceCurrency ?? "USD" : undefined,
+          paymentTermId: item.paymentTermId || undefined,
+          paymentTermLabel: item.paymentTermId ? paymentTermById.get(item.paymentTermId) : undefined,
           name: data.name,
           company: data.company,
           companyInn: data.companyInn,
@@ -130,6 +141,7 @@ export async function POST(req: NextRequest) {
             quantity: item.quantity,
             desiredPrice: item.desiredPrice,
             desiredPriceCurrency: item.desiredPriceCurrency,
+            paymentTermLabel: item.paymentTermId ? paymentTermById.get(item.paymentTermId) : undefined,
             productUrl: product ? `${req.nextUrl.origin}/product/${product.slug}` : req.nextUrl.origin,
           };
         });
